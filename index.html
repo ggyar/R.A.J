@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -131,6 +132,24 @@
         </div>
 
     </div>
+    <div id="category-screen" style="display: none; text-align: center; margin-top: 50px;">
+    <h2 style="color: #ffcc00; font-family: sans-serif;">Wähle eine Quiz-Kategorie</h2>
+    <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
+        <button onclick="selectCategory('gaming')" style="padding: 15px 30px; font-size: 18px; background: #ffcc00; border: none; cursor: pointer; font-weight: bold;">Gaming</button>
+        <button onclick="selectCategory('allgemeinwissen')" style="padding: 15px 30px; font-size: 18px; background: #ffcc00; border: none; cursor: pointer; font-weight: bold;">Allgemeinwissen</button>
+    </div>
+</div>
+ 
+<div id="lobby-screen" style="display: none; text-align: center; margin-top: 50px; font-family: sans-serif; color: white;">
+    <h2>Spiel-Lobby</h2>
+    <div style="font-size: 32px; background: rgba(255,255,255,0.1); padding: 20px; display: inline-block; margin: 20px; border-radius: 10px;">
+        Spiel-PIN: <span id="display-pin" style="color: #ffcc00; font-weight: bold;">----</span>
+    </div>
+    <h3>Beigetretene Spieler:</h3>
+    <ul id="player-list" style="list-style: none; padding: 0; font-size: 20px; color: #ffcc00;"></ul>
+</div>
+ 
+    
 
     <script>
         // VERBINDUNG ZUM SERVER HERSTELLEN (Lokal oder Render URL)
