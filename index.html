@@ -91,7 +91,13 @@
 
         /* ERDE MIT REALISTISCHEN GEOGRAPHISCHEN REPRODUKTIONEN VIA CSS */
         header { text-align: center; margin-bottom: 50px; }
-        .logo-container { display: inline-block; position: relative; margin-bottom: 20px; width: 140px; height: 140px; }
+        .logo-container { 
+            display: inline-block; 
+            position: relative; 
+            margin-bottom: 20px; 
+            width: 140px; 
+            height: 140px; 
+        }
         .logo-ring { position: absolute; top: 0; left: 0; width: 140px; height: 140px; border: 1px solid rgba(255,255,255,0.03); border-top: 2px solid var(--accent-orange); border-bottom: 2px solid var(--neon-blue); border-radius: 50%; animation: rotateRing 12s linear infinite; }
         .earth-sphere { position: absolute; top: 15px; left: 15px; width: 110px; height: 110px; border-radius: 50%; background: #0b1426; box-shadow: inset -18px -18px 30px rgba(0,0,0,0.95), 0 0 35px rgba(0, 242, 254, 0.3); overflow: hidden; position: relative; }
         /* NEU: BLUR-ZONEN-MASKIERUNG FÜR DEN MITTLEREN PLANETEN */
@@ -129,7 +135,21 @@
         
         @keyframes spinPlanetenKontinente { 0% { transform: translateX(0); } 100% { transform: translateX(-200px); } }
         
-        .logo-text { position: absolute; width: 100%; text-align: center; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Impact', 'Arial Black', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: 3px; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.9); z-index: 3; }
+        .logo-text { 
+            position: absolute; 
+            width: 100%; 
+            text-align: center; 
+            top: 100%; /* Positioniert den Text direkt UNTER den Planeten */
+            left: 0; 
+            margin-top: 15px; /* Abstand zur Kugel */
+            font-family: 'Impact', 'Arial Black', sans-serif; 
+            font-size: 24px; 
+            font-weight: 900; 
+            letter-spacing: 3px; 
+            color: #fff; 
+            text-shadow: 0 4px 10px rgba(0,0,0,0.9); 
+            z-index: 20; /* Garantiert, dass der Text ÜBER Maske und Planeten liegt */
+        }
         
         h1 { font-size: 4rem; font-weight: 800; letter-spacing: 10px; background: linear-gradient(135deg, #fff 0%, #94a3b8 50%, var(--accent-orange) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
         
@@ -238,7 +258,7 @@
     <div class="wrapper">
 
         <div class="screen" id="start-screen">
-            <header>
+<header>
                 <div class="logo-container">
                     <div class="logo-ring"></div>
                     <div class="earth-sphere">
@@ -250,12 +270,12 @@
                             <div class="continent-shape af2"></div><div class="continent-shape eu2"></div>
                             <div class="continent-shape au2"></div>
                         </div>
-                        </div>
-                    <div class="earth-mask"></div> <div class="logo-text">R·A·J</div>
+                    </div>
+                    <div class="earth-mask"></div>
                 </div>
-                </div>
-                <br>
-                <h1>R.A.J</h1>
+                <div class="logo-text">R·A·J</div>
+                
+                <br><br> <h1>R.A.J</h1>
                 <p style="color: var(--text-muted); letter-spacing: 4px; margin-top: 8px; font-size: 0.9rem; text-transform: uppercase;">The Ultimate Elimination Quiz</p>
             </header>
 
