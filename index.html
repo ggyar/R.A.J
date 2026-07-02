@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="de">
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -85,7 +84,7 @@
                         <label style="font-size: 0.9rem; color: var(--text-muted);">Dein Spielername</label>
                         <input type="text" id="join-name" placeholder="WeltraumDino" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 14px; color: #fff; font-size: 1.1rem; border-radius: 8px;">
                     </div>
-                    <button class="btn-submit" onclick="playerTryJoin()">Dem Spiel beitreten 🚀</button>
+                    <button class="btn-submit" onclick="spielBeitreten()">Dem Spiel beitreten 🚀</button>
                 </div>
             </div>
         </div>
@@ -132,101 +131,80 @@
         </div>
 
     </div>
-    <div id="category-screen" style="display: none; text-align: center; margin-top: 50px;">
-    <h2 style="color: #ffcc00; font-family: sans-serif;">Wähle eine Quiz-Kategorie</h2>
-    <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
-        <button onclick="selectCategory('gaming')" style="padding: 15px 30px; font-size: 18px; background: #ffcc00; border: none; cursor: pointer; font-weight: bold;">Gaming</button>
-        <button onclick="selectCategory('allgemeinwissen')" style="padding: 15px 30px; font-size: 18px; background: #ffcc00; border: none; cursor: pointer; font-weight: bold;">Allgemeinwissen</button>
-    </div>
-</div>
- 
-<div id="lobby-screen" style="display: none; text-align: center; margin-top: 50px; font-family: sans-serif; color: white;">
-    <h2>Spiel-Lobby</h2>
-    <div style="font-size: 32px; background: rgba(255,255,255,0.1); padding: 20px; display: inline-block; margin: 20px; border-radius: 10px;">
-        Spiel-PIN: <span id="display-pin" style="color: #ffcc00; font-weight: bold;">----</span>
-    </div>
-    <h3>Beigetretene Spieler:</h3>
-    <ul id="player-list" style="list-style: none; padding: 0; font-size: 20px; color: #ffcc00;"></ul>
-</div>
- 
-    
 
     <script>
-        // VERBINDUNG ZUM SERVER HERSTELLEN (Lokal oder Render URL)
-        const SERVER_URL = "https://r-a-j-1.onrender.com"; // Ersetze dies später durch deine Render-URL
-        const socket = io(SERVER_URL);
-
-        let ichBinHost = false;
-
-        // --- SERVER ANTWORTEN (EVENTS) ---
-        socket.on('lobbyCreated', ({ pin, kategorie }) => {
-            document.getElementById('generated-pin').innerText = pin;
-            document.getElementById('chosen-category').innerText = kategorie;
-            document.getElementById('menu-screen').classList.add('hidden');
-            document.getElementById('lobby-screen').classList.remove('hidden');
-        });
-
-        socket.on('updatePlayers', (players) => {
-            if (!ichBinHost) return;
-            const list = document.getElementById('lobby-player-list');
-            list.innerHTML = "";
-            players.forEach(p => {
-                list.innerHTML += `<li class="player-pill">${p.name}</li>`;
-            });
-        });
-
-        socket.on('joinedSuccessfully', ({ kategorie }) => {
-            document.getElementById('player-screen-cat').innerText = kategorie;
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('player-wait-screen').classList.remove('hidden');
-        });
-
-        socket.on('errorMsg', (msg) => {
-            alert(msg);
-        });
-
-        // --- NAVIGATION & LOGIK ---
-        function geheZuSpielemenue() {
-            ichBinHost = true;
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('menu-screen').classList.remove('hidden');
-        }
-
-        function selectCategory(kategorieName) {
-            // Sende an den Server, dass er eine Lobby für diese Kategorie aufmachen soll
-            socket.emit('createLobby', kategorieName);
-        }
-
-        function playerTryJoin() {
-            const pin = document.getElementById('join-pin').value.trim();
-            const playerName = document.getElementById('join-name').value.trim();
-
-            if (pin === "" || playerName === "") {
-                alert("Bitte gib eine gültige PIN und einen Namen ein!");
-                return;
-            }
-            // Sende Beitrittsanfrage an den Server
-            socket.emit('joinLobby', { pin, playerName });
-        }
-
-        // --- HOCHPERFORMANTE STERNE ---
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
-        let stars = [];
-        for (let i = 0; i < 40; i++) { stars.push({ x: Math.random() * width, y: Math.random() * height, size: Math.random() * 1.2, speed: Math.random() * 0.01 + 0.005 }); }
-        function animate() {
-            ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-            stars.forEach(s => {
-                s.y += s.speed * height * 0.05;
-                if (s.y > height) s.y = 0;
-                ctx.fillRect(s.x, s.y, s.size, s.size);
-            });
-            requestAnimationFrame(animate);
-        }
-        animate();
+      // // VERBINDUNG ZUM SERVER HERSTELLEN (Render Live-URL)
+const SERVER_URL = "https://r-a-j-1.onrender.com";
+const socket = io(SERVER_URL);
+ 
+let ichBinHost = false;
+ 
+// // --- SERVER ANTWORTEN (EVENTS) ---
+ 
+// 1. Wenn der Server die Lobby erfolgreich erstellt hat (für den Host)
+socket.on('lobbyCreated', ({ pin, kategorie }) => {
+    document.getElementById('generated-pin').innerText = pin;
+    document.getElementById('chosen-category').innerText = kategorie;
+    
+    // Wechselt zur Lobby-Ansicht
+    document.getElementById('menu-screen').classList.add('hidden');
+    document.getElementById('lobby-screen').classList.remove('hidden');
+});
+ 
+// 2. Wenn Spieler der Lobby beitreten (wird live aktualisiert)
+socket.on('updatePlayers', (players) => {
+    if (!ichBinHost) return;
+    
+    const list = document.getElementById('lobby-player-list');
+    list.innerHTML = ""; // Liste leeren
+    
+    players.forEach(p => {
+        list.innerHTML += `<li class="player-pill">${p.name}</li>`;
+    });
+});
+ 
+// 3. Wenn der Mitspieler erfolgreich der Lobby beigetreten ist (auf seinem Handy/Bildschirm)
+socket.on('joinedSuccessfully', ({ kategorie }) => {
+    document.getElementById('player-screen-cat').innerText = kategorie;
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('player-wait-screen').classList.remove('hidden');
+});
+ 
+// 4. Fehlermeldung vom Server (z.B. falsche PIN)
+socket.on('errorMsg', (msg) => {
+    alert(msg);
+});
+ 
+ 
+// // --- NAVIGATION & LOGIK ---
+ 
+// Funktion: Wird aufgerufen, wenn man auf "ALS HOST STARTEN" klickt
+function geheZuSpielemenue() {
+    ichBinHost = true;
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('menu-screen').classList.remove('hidden');
+}
+ 
+// Funktion: Wird aufgerufen, wenn der Host eine Kategorie anklickt
+function selectCategory(kategorieName) {
+    // Sendet den Befehl "createLobby" an deine server.js
+    socket.emit('createLobby', kategorieName);
+}
+ 
+// Funktion: Wird aufgerufen, wenn ein Mitspieler auf "DEM SPIEL BEITRETEN" klickt
+function spielBeitreten() {
+    // Hier liest das Skript die Eingaben aus deinen Feldern aus
+    const pinInput = document.querySelector('input[placeholder="z.B. 4839"]').value;
+    const nameInput = document.querySelector('input[placeholder="WeltraumDino"]').value;
+    
+    if(!pinInput || !nameInput) {
+        alert("Bitte gib eine PIN und einen Namen ein!");
+        return;
+    }
+    
+    // Schickt die Login-Daten an die server.js
+    socket.emit('joinLobby', { pin: pinInput, name: nameInput });
+}
     </script>
 </body>
 </html>
