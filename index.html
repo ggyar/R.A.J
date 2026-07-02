@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>R.A.J - The Ultimate Elimination Quiz</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         
@@ -77,68 +79,70 @@
             to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
-        /* VERFEINERTER ROTIERENDER RAJ-PLANET MIT ORGANISCHEN KONTINENTEN */
+        /* ERDE MIT REALISTISCHEN GEOGRAPHISCHEN REPRODUKTIONEN VIA CSS */
         header { text-align: center; margin-bottom: 50px; }
-        .logo-container { display: inline-block; position: relative; margin-bottom: 20px; width: 130px; height: 130px; }
+        .logo-container { display: inline-block; position: relative; margin-bottom: 20px; width: 140px; height: 140px; }
         
         .logo-ring { 
-            position: absolute; top: 0; left: 0; width: 130px; height: 130px; 
+            position: absolute; top: 0; left: 0; width: 140px; height: 140px; 
             border: 1px solid rgba(255,255,255,0.03); border-top: 2px solid var(--accent-orange); border-bottom: 2px solid var(--neon-blue); 
             border-radius: 50%; animation: rotateRing 12s linear infinite; 
         }
         
         .earth-sphere { 
-            position: absolute; top: 15px; left: 15px; width: 100px; height: 100px; 
-            border-radius: 50%; background: #0c152b; 
-            box-shadow: inset -15px -15px 30px rgba(0,0,0,0.9), 0 0 35px rgba(0, 242, 254, 0.3); 
+            position: absolute; top: 15px; left: 15px; width: 110px; height: 110px; 
+            border-radius: 50%; background: #0b1426; 
+            box-shadow: inset -18px -18px 30px rgba(0,0,0,0.95), 0 0 35px rgba(0, 242, 254, 0.3); 
             overflow: hidden; position: relative;
         }
         
-        /* Kontinente geformt aus unregelmäßigen Polygonen per clip-path */
+        /* Das lange, rotierende Kontinentband (Doppeltes Set für nahtlosen Loop) */
         .continents {
             position: absolute; top: 0; left: 0; width: 200%; height: 100%;
             opacity: 0.85;
-            animation: spinPlanetenKontinente 16s linear infinite;
+            animation: spinPlanetenKontinente 24s linear infinite;
         }
         
-        /* Kontinent-Formen als Pseudoelemente simuliert */
-        .continents::before, .continents::after {
-            content: ''; position: absolute; background: linear-gradient(135deg, #10b981, #047857);
+        /* Die exakten geographischen Polygone für die Kontinente */
+        .continent-shape {
+            position: absolute; background: linear-gradient(135deg, #10b981, #047857);
         }
-        /* Kontinent 1 (z.B. links) */
-        .continents::before {
-            top: 20px; left: 15px; width: 60px; height: 55px;
-            clip-path: polygon(30% 10%, 85% 20%, 90% 60%, 45% 95%, 10% 70%, 20% 40%);
-        }
-        /* Kontinent 2 (z.B. rechts versetzt für unendliche Rotation) */
-        .continents::after {
-            top: 30px; left: 115px; width: 55px; height: 50px;
-            clip-path: polygon(20% 20%, 70% 5%, 95% 40%, 60% 80%, 30% 90%, 5% 50%);
-        }
+        
+        /* --- SET 1 --- */
+        /* Nordamerika */
+        .continents .na1 { top: 15px; left: 10px; width: 45px; height: 35px; clip-path: polygon(0% 20%, 40% 10%, 80% 0%, 100% 30%, 80% 70%, 50% 100%, 30% 80%, 15% 90%); }
+        /* Südamerika */
+        .continents .sa1 { top: 48px; left: 25px; width: 30px; height: 45px; clip-path: polygon(10% 10%, 90% 5%, 80% 35%, 40% 70%, 30% 100%, 20% 70%, 5% 40%); }
+        /* Afrika */
+        .continents .af1 { top: 35px; left: 70px; width: 40px; height: 45px; clip-path: polygon(0% 10%, 45% 0%, 95% 20%, 90% 45%, 60% 70%, 50% 100%, 35% 85%, 25% 45%); }
+        /* Eurasien */
+        .continents .eu1 { top: 10px; left: 65px; width: 65px; height: 35px; clip-path: polygon(0% 50%, 20% 20%, 50% 10%, 95% 15%, 100% 60%, 75% 85%, 50% 75%, 25% 90%); }
+        /* Australien */
+        .continents .au1 { top: 60px; left: 115px; width: 25px; height: 20px; clip-path: polygon(10% 40%, 50% 10%, 90% 20%, 95% 70%, 60% 95%, 20% 80%); }
+
+        /* --- SET 2 (Exakt +140px versetzt für den endlosen Loop) --- */
+        .continents .na2 { top: 15px; left: 150px; width: 45px; height: 35px; clip-path: polygon(0% 20%, 40% 10%, 80% 0%, 100% 30%, 80% 70%, 50% 100%, 30% 80%, 15% 90%); }
+        .continents .sa2 { top: 48px; left: 165px; width: 30px; height: 45px; clip-path: polygon(10% 10%, 90% 5%, 80% 35%, 40% 70%, 30% 100%, 20% 70%, 5% 40%); }
+        .continents .af2 { top: 35px; left: 210px; width: 40px; height: 45px; clip-path: polygon(0% 10%, 45% 0%, 95% 20%, 90% 45%, 60% 70%, 50% 100%, 35% 85%, 25% 45%); }
+        .continents .eu2 { top: 10px; left: 205px; width: 65px; height: 35px; clip-path: polygon(0% 50%, 20% 20%, 50% 10%, 95% 15%, 100% 60%, 75% 85%, 50% 75%, 25% 90%); }
+        .continents .au2 { top: 60px; left: 255px; width: 25px; height: 20px; clip-path: polygon(10% 40%, 50% 10%, 90% 20%, 95% 70%, 60% 95%, 20% 80%); }
         
         @keyframes spinPlanetenKontinente {
             0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            100% { transform: translateX(-140px); }
         }
         
         .logo-text { position: absolute; width: 100%; text-align: center; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Impact', 'Arial Black', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: 3px; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.9); z-index: 3; }
         
         h1 { font-size: 4rem; font-weight: 800; letter-spacing: 10px; background: linear-gradient(135deg, #fff 0%, #94a3b8 50%, var(--accent-orange) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
         
-        /* GRID & HOST BUTTON FIX */
         .main-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: stretch; }
         @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
         
-        /* Flexbox-Struktur für Info-Sektion hält alles perfekt im Lot */
-        .info-section {
-            display: flex; flex-direction: column; justify-content: space-between;
-        }
+        .info-section { display: flex; flex-direction: column; justify-content: space-between; }
 
         .card { 
-            background: var(--card-bg); 
-            border: 1px solid var(--card-border); 
-            border-radius: 28px; 
-            padding: 45px; 
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 28px; padding: 45px; 
             box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.08); 
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
         }
@@ -164,10 +168,20 @@
         .category-card:hover { transform: translateY(-8px); border-color: var(--neon-purple); background: rgba(79, 172, 254, 0.04); box-shadow: 0 20px 40px rgba(79, 172, 254, 0.12); }
         .category-icon { font-size: 2.8rem; margin-bottom: 15px; display: block; }
         
-        .kahoot-lobby { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 40px; align-items: start; }
-        @media (max-width: 800px) { .kahoot-lobby { grid-template-columns: 1fr; } }
-        .pin-box { text-align: center; background: rgba(0, 0, 0, 0.25); padding: 45px; border-radius: 22px; border: 1px dashed rgba(255,255,255,0.12); }
-        .game-pin { font-size: 4.8rem; font-weight: 800; color: #fff; letter-spacing: 10px; margin: 20px 0; text-shadow: 0 0 35px rgba(255,255,255,0.15); }
+        /* QR LOBBY DESIGN LAYOUT */
+        .kahoot-lobby { display: grid; grid-template-columns: 1fr 1.1fr; gap: 40px; align-items: start; }
+        @media (max-width: 900px) { .kahoot-lobby { grid-template-columns: 1fr; } }
+        .pin-box { text-align: center; background: rgba(0, 0, 0, 0.25); padding: 40px; border-radius: 22px; border: 1px dashed rgba(255,255,255,0.12); }
+        .game-pin { font-size: 4rem; font-weight: 800; color: #fff; letter-spacing: 10px; margin: 15px 0; text-shadow: 0 0 35px rgba(255,255,255,0.15); }
+        
+        /* Stilvoller QR-Code-Rahmen */
+        .qr-wrapper {
+            display: inline-block; background: white; padding: 16px; border-radius: 20px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin-top: 15px;
+            transition: transform 0.3s ease;
+        }
+        .qr-wrapper:hover { transform: scale(1.03); }
+        
         .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 14px; list-style: none; }
         .player-pill { background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 18px; border-radius: 16px; text-align: center; font-weight: 600; }
         .player-pill.eliminated { background: rgba(231, 29, 54, 0.04); border-color: rgba(231, 29, 54, 0.2); color: #f87171; opacity: 0.35; text-decoration: line-through; transform: scale(0.96); }
@@ -186,8 +200,7 @@
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
             backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-            background: rgba(3, 4, 10, 0.88);
-            opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+            background: rgba(3, 4, 10, 0.88); opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
         }
         .result-overlay.active { opacity: 1; pointer-events: auto; }
         
@@ -231,7 +244,14 @@
                 <div class="logo-container">
                     <div class="logo-ring"></div>
                     <div class="earth-sphere">
-                        <div class="continents"></div>
+                        <div class="continents">
+                            <div class="continent-shape na1"></div><div class="continent-shape sa1"></div>
+                            <div class="continent-shape af1"></div><div class="continent-shape eu1"></div>
+                            <div class="continent-shape au1"></div>
+                            <div class="continent-shape na2"></div><div class="continent-shape sa2"></div>
+                            <div class="continent-shape af2"></div><div class="continent-shape eu2"></div>
+                            <div class="continent-shape au2"></div>
+                        </div>
                     </div>
                     <div class="logo-text">R·A·J</div>
                 </div>
@@ -244,7 +264,7 @@
                 <div class="card info-section">
                     <div>
                         <h2 style="font-size: 1.6rem; font-weight: 600; color: #fff;">Spielleiter (Großer Bildschirm)</h2>
-                        <p style="margin-top: 15px; color: var(--text-muted); line-height: 1.75;">Eröffne ein neues Match auf diesem Display. Deine Mitspieler können die PIN einscannen und treten per Smartphone live an.</p>
+                        <p style="margin-top: 15px; color: var(--text-muted); line-height: 1.75;">Eröffne ein neues Match auf diesem Display. Deine Mitspieler können die PIN einscannen oder ganz bequem via automatischem QR-Code live beitreten.</p>
                     </div>
                     <button class="btn-play" style="margin-top: 30px;" onclick="geheZuSpielemenue()">Als Host starten →</button>
                 </div>
@@ -285,9 +305,13 @@
             </div>
             <div class="kahoot-lobby">
                 <div class="card pin-box">
-                    <h3 style="font-size: 1.1rem; color: var(--text-muted); font-weight: 400; text-transform: uppercase; letter-spacing: 1px;">Sitzungs-Code</h3>
+                    <h3 style="font-size: 1rem; color: var(--text-muted); font-weight: 400; text-transform: uppercase; letter-spacing: 1px;">Sitzungs-Code</h3>
                     <div class="game-pin" id="generated-pin">----</div>
-                    <p style="color: var(--text-muted); font-size: 0.95rem;">Gib diese PIN auf dem Mobilgerät ein.</p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">Scannen zum direkten Beitritt:</p>
+                    
+                    <div class="qr-wrapper">
+                        <div id="lobby-qrcode"></div>
+                    </div>
                 </div>
                 <div class="card" style="padding: 35px;">
                     <div style="font-size: 1.1rem; margin-bottom: 20px; color: var(--text-muted); font-weight: 500;">Angemeldete Spieler:</div>
@@ -334,11 +358,21 @@
         let ichBinHost = false;
         let meineRaumPin = null;
 
+        // Automatische Erkennung der URL-Parameter für den QR-Beitritt
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pinVonUrl = urlParams.get('joinPin');
+            if (pinVonUrl) {
+                document.getElementById('join-pin').value = pinVonUrl;
+                // Scrollt den Spieler sanft direkt zum Login-Formular
+                document.getElementById('join-name').focus();
+            }
+        });
+
         function erzeugeVordergrundSterne() {
             const container = document.getElementById('foreground-stars');
             container.innerHTML = "";
             const anzahlSterne = 12; 
-            
             for(let i=0; i<anzahlSterne; i++) {
                 const star = document.createElement('div');
                 star.className = "foreground-star";
@@ -358,9 +392,24 @@
             document.getElementById('chosen-category').innerText = kategorie;
             document.getElementById('menu-screen').classList.add('hidden');
             document.getElementById('lobby-screen').classList.remove('hidden');
+            
             if (ichBinHost) {
                 document.getElementById('start-game-btn').classList.remove('hidden');
             }
+
+            // QR CODE GENERATOR AKTIVIEREN
+            // Erstellt einen Link, der die PIN direkt als URL-Parameter übergibt
+            const beitrittsLink = `${window.location.origin}${window.location.pathname}?joinPin=${pin}`;
+            
+            document.getElementById('lobby-qrcode').innerHTML = ""; // Altes leeren
+            new QRCode(document.getElementById('lobby-qrcode'), {
+                text: beitrittsLink,
+                width: 160,
+                height: 160,
+                colorDark : "#04060f",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
         });
 
         socket.on('updatePlayers', (players) => {
