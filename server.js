@@ -57,7 +57,14 @@ const fragenKatalog = {
 };
 
 io.on('connection', (socket) => {
+    io.emit('playerCountUpdate', io.engine.clientsCount);
+
+    // 2. Wenn jemand geht: Anzahl aktualisieren
+    socket.on('disconnect', () => {
+        io.emit('playerCountUpdate', io.engine.clientsCount);
+    });
     console.log(`Benutzer verbunden: ${socket.id}`);
+
 
     socket.on('createLobby', (kategorie) => {
         const pin = Math.floor(1000 + Math.random() * 9000).toString();
