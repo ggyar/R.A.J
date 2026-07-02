@@ -7,6 +7,7 @@ const app = express();
 app.use(cors());
 
 // Falls du das Frontend später auch über den Server ausliefern willst:
+app.use(express.static(__dirname));
 
 const server = http.createServer(app);
 const io = new Server(server, {
