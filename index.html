@@ -30,6 +30,7 @@
             position: relative;
         }
 
+        /* HINTERGRUND & STERNE */
         .space-gradient { 
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
             background: 
@@ -47,13 +48,28 @@
             background-size: 300px 300px;
             animation: starsSlowFly 140s linear infinite;
         }
-        @keyframes starsSlowFly {
-            from { background-position: 0 0; }
-            to { background-position: 300px 600px; }
-        }
+        @keyframes starsSlowFly { from { background-position: 0 0; } to { background-position: 300px 600px; } }
         
+        /* NEU: FALLENDE CUSTOM PLANETEN (Z-INDEX 2) */
+        #falling-planets {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2; pointer-events: none; overflow: hidden;
+        }
+        .falling-planet {
+            position: absolute;
+            animation: planetFall linear infinite;
+            opacity: 0.9;
+        }
+        @keyframes planetFall {
+            0% { transform: translateY(-20vh) translateX(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(115vh) translateX(150px) rotate(220deg); opacity: 0; }
+        }
+
+        /* MAIN WRAPPER (Z-INDEX 5) */
         .wrapper { position: relative; z-index: 5; max-width: 1150px; margin: 0 auto; padding: 60px 24px; }
         
+        /* SCHICHT: STERNE IM VORDERGRUND (Z-INDEX 10) */
         .fg-stars-container {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10; pointer-events: none;
         }
@@ -69,79 +85,40 @@
             100% { transform: translateY(110vh) translateX(50px) scale(1.2); opacity: 0; }
         }
 
-        .screen { 
-            animation: organicReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
+        .screen { animation: organicReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
         .hidden { display: none !important; }
-        
-        @keyframes organicReveal {
-            from { opacity: 0; transform: translateY(40px) scale(0.96); filter: blur(20px); }
-            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-        }
+        @keyframes organicReveal { from { opacity: 0; transform: translateY(40px) scale(0.96); filter: blur(20px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
 
-       /* ERDE MIT REALISTISCHEN GEOGRAPHISCHEN REPRODUKTIONEN VIA CSS */
+        /* ERDE MIT REALISTISCHEN GEOGRAPHISCHEN REPRODUKTIONEN VIA CSS */
         header { text-align: center; margin-bottom: 50px; }
         .logo-container { display: inline-block; position: relative; margin-bottom: 20px; width: 140px; height: 140px; }
+        .logo-ring { position: absolute; top: 0; left: 0; width: 140px; height: 140px; border: 1px solid rgba(255,255,255,0.03); border-top: 2px solid var(--accent-orange); border-bottom: 2px solid var(--neon-blue); border-radius: 50%; animation: rotateRing 12s linear infinite; }
+        .earth-sphere { position: absolute; top: 15px; left: 15px; width: 110px; height: 110px; border-radius: 50%; background: #0b1426; box-shadow: inset -18px -18px 30px rgba(0,0,0,0.95), 0 0 35px rgba(0, 242, 254, 0.3); overflow: hidden; position: relative; }
         
-        .logo-ring { 
-            position: absolute; top: 0; left: 0; width: 140px; height: 140px; 
-            border: 1px solid rgba(255,255,255,0.03); border-top: 2px solid var(--accent-orange); border-bottom: 2px solid var(--neon-blue); 
-            border-radius: 50%; animation: rotateRing 12s linear infinite; 
-        }
+        .continents { position: absolute; top: 0; left: 0; width: 400px; height: 100%; opacity: 0.85; animation: spinPlanetenKontinente 20s linear infinite; }
+        .continent-shape { position: absolute; background: linear-gradient(135deg, #10b981, #047857); }
         
-        .earth-sphere { 
-            position: absolute; top: 15px; left: 15px; width: 110px; height: 110px; 
-            border-radius: 50%; background: #0b1426; 
-            box-shadow: inset -18px -18px 30px rgba(0,0,0,0.95), 0 0 35px rgba(0, 242, 254, 0.3); 
-            overflow: hidden; position: relative;
-        }
-        
-        /* Das lange, rotierende Kontinentband (Breite auf 400px erhöht für alle Kontinente) */
-        .continents {
-            position: absolute; top: 0; left: 0; width: 400px; height: 100%;
-            opacity: 0.85;
-            animation: spinPlanetenKontinente 20s linear infinite;
-        }
-        
-        /* Die geographischen Polygone für die Kontinente */
-        .continent-shape {
-            position: absolute; background: linear-gradient(135deg, #10b981, #047857);
-        }
-        
-        /* --- REALE KONTINENT-KETTE (Nacheinander aufgereiht) --- */
-        
-        /* Nordamerika (Nord-West) */
+        /* SET 1 */
         .continents .na1 { top: 12px; left: 15px; width: 40px; height: 30px; clip-path: polygon(0% 20%, 40% 10%, 80% 0%, 100% 40%, 80% 70%, 50% 100%, 20% 70%); }
-        
-        /* Südamerika (Süd-West) */
         .continents .sa1 { top: 45px; left: 30px; width: 28px; height: 42px; clip-path: polygon(10% 10%, 90% 5%, 80% 35%, 40% 70%, 20% 100%, 5% 40%); }
-        
-        /* Afrika (Zentrum) */
         .continents .af1 { top: 38px; left: 85px; width: 38px; height: 45px; clip-path: polygon(0% 15%, 50% 0%, 95% 15%, 90% 45%, 60% 75%, 45% 100%, 30% 85%, 15% 50%); }
-        
-        /* Eurasien (Nord-Ost) */
         .continents .eu1 { top: 8px; left: 110px; width: 65px; height: 35px; clip-path: polygon(0% 60%, 20% 20%, 60% 10%, 95% 15%, 100% 60%, 75% 90%, 40% 80%); }
-        
-        /* Australien (Süd-Ost) */
         .continents .au1 { top: 62px; left: 155px; width: 26px; height: 20px; clip-path: polygon(10% 40%, 50% 10%, 90% 20%, 95% 70%, 60% 95%, 20% 80%); }
 
-        /* --- SET 2: Exakter Klon (Um genau 200px nach rechts verschoben für nahtlosen Übergang) --- */
+        /* SET 2 (Exakt +200px) */
         .continents .na2 { top: 12px; left: 215px; width: 40px; height: 30px; clip-path: polygon(0% 20%, 40% 10%, 80% 0%, 100% 40%, 80% 70%, 50% 100%, 20% 70%); }
         .continents .sa2 { top: 45px; left: 230px; width: 28px; height: 42px; clip-path: polygon(10% 10%, 90% 5%, 80% 35%, 40% 70%, 20% 100%, 5% 40%); }
         .continents .af2 { top: 38px; left: 285px; width: 38px; height: 45px; clip-path: polygon(0% 15%, 50% 0%, 95% 15%, 90% 45%, 60% 75%, 45% 100%, 30% 85%, 15% 50%); }
         .continents .eu2 { top: 8px; left: 310px; width: 65px; height: 35px; clip-path: polygon(0% 60%, 20% 20%, 60% 10%, 95% 15%, 100% 60%, 75% 90%, 40% 80%); }
         .continents .au2 { top: 62px; left: 355px; width: 26px; height: 20px; clip-path: polygon(10% 40%, 50% 10%, 90% 20%, 95% 70%, 60% 95%, 20% 80%); }
         
-        /* Animation verschiebt das Band jetzt exakt um die Breite eines Sets (200px) */
-        @keyframes spinPlanetenKontinente {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-200px); }
-        }
+        @keyframes spinPlanetenKontinente { 0% { transform: translateX(0); } 100% { transform: translateX(-200px); } }
         
         .logo-text { position: absolute; width: 100%; text-align: center; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Impact', 'Arial Black', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: 3px; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.9); z-index: 3; }
         
         h1 { font-size: 4rem; font-weight: 800; letter-spacing: 10px; background: linear-gradient(135deg, #fff 0%, #94a3b8 50%, var(--accent-orange) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
         
+        /* UI KARTEN & LAYOUT */
         .main-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: stretch; }
         @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
         
@@ -180,7 +157,6 @@
         .pin-box { text-align: center; background: rgba(0, 0, 0, 0.25); padding: 40px; border-radius: 22px; border: 1px dashed rgba(255,255,255,0.12); }
         .game-pin { font-size: 4rem; font-weight: 800; color: #fff; letter-spacing: 10px; margin: 15px 0; text-shadow: 0 0 35px rgba(255,255,255,0.15); }
         
-        /* Stilvoller QR-Code-Rahmen */
         .qr-wrapper {
             display: inline-block; background: white; padding: 16px; border-radius: 20px; 
             box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin-top: 15px;
@@ -202,6 +178,7 @@
         .quiz-opt-btn:hover:not(:disabled) { border-color: #fff; background: rgba(255, 255, 255, 0.04); transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
         .quiz-opt-btn:disabled { cursor: not-allowed; }
         
+        /* OVERLAYS */
         .result-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -233,7 +210,7 @@
 
     <div class="space-gradient"></div>
     <div class="bg-stars"></div>
-    <div id="foreground-stars" class="fg-stars-container"></div>
+    <div id="falling-planets"></div> <div id="foreground-stars" class="fg-stars-container"></div>
 
     <div id="result-overlay" class="result-overlay">
         <div class="result-box">
@@ -314,7 +291,6 @@
                     <h3 style="font-size: 1rem; color: var(--text-muted); font-weight: 400; text-transform: uppercase; letter-spacing: 1px;">Sitzungs-Code</h3>
                     <div class="game-pin" id="generated-pin">----</div>
                     <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">Scannen zum direkten Beitritt:</p>
-                    
                     <div class="qr-wrapper">
                         <div id="lobby-qrcode"></div>
                     </div>
@@ -364,22 +340,72 @@
         let ichBinHost = false;
         let meineRaumPin = null;
 
-        // Automatische Erkennung der URL-Parameter für den QR-Beitritt
+        // QR Auto-Fill Erkennung
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const pinVonUrl = urlParams.get('joinPin');
             if (pinVonUrl) {
                 document.getElementById('join-pin').value = pinVonUrl;
-                // Scrollt den Spieler sanft direkt zum Login-Formular
                 document.getElementById('join-name').focus();
             }
         });
 
+        // --- CUSTOM PLANETEN GENERATOR ---
+        function erzeugeFallendePlaneten() {
+            const container = document.getElementById('falling-planets');
+            container.innerHTML = "";
+            
+            // Die Dateinamen aus deinem Assets-Ordner
+            const planetImages = [
+                'Planets_Asset-11.png', 'Planets_Asset-12.png', 'Planets_Asset-13.png',
+                'Planets_Asset-14.png', 'Planets_Asset-15.png', 'Planets_Asset-16.png',
+                'Planets_Asset-17.png', 'Planets_Asset-18.png', 'Planets_Asset-19.png',
+                'Planets_Asset-20.png'
+            ];
+
+            const anzahlPlaneten = 5; // Elegante Menge, nicht überladen
+
+            for(let i=0; i<anzahlPlaneten; i++) {
+                const planet = document.createElement('img');
+                const randomImg = planetImages[Math.floor(Math.random() * planetImages.length)];
+                
+                planet.src = `assets/${randomImg}`; // WICHTIG: Erwartet den 'assets' Ordner!
+                planet.className = "falling-planet";
+
+                // Zufällige Größe für Parallax-Effekt
+                const size = Math.random() * 90 + 40; 
+                planet.style.width = size + "px";
+                planet.style.height = "auto";
+
+                // Startposition (X-Achse)
+                planet.style.left = (Math.random() * 100) + "vw";
+
+                // Langsame, majestätische Geschwindigkeit
+                planet.style.animationDuration = (Math.random() * 25 + 25) + "s"; 
+                planet.style.animationDelay = (Math.random() * -30) + "s"; 
+
+                // Parallax-Tiefe durch CSS-Filter & Z-Index simulieren
+                if(size < 60) {
+                    planet.style.filter = "blur(2px) brightness(0.6)";
+                    planet.style.zIndex = "1";
+                } else if(size > 100) {
+                    planet.style.filter = "blur(0px) brightness(1.1)";
+                    planet.style.zIndex = "3";
+                } else {
+                    planet.style.filter = "blur(1px) brightness(0.8)";
+                    planet.style.zIndex = "2";
+                }
+
+                container.appendChild(planet);
+            }
+        }
+        erzeugeFallendePlaneten();
+
+        // --- VORDERGRUND STERNE ---
         function erzeugeVordergrundSterne() {
             const container = document.getElementById('foreground-stars');
             container.innerHTML = "";
-            const anzahlSterne = 12; 
-            for(let i=0; i<anzahlSterne; i++) {
+            for(let i=0; i<12; i++) {
                 const star = document.createElement('div');
                 star.className = "foreground-star";
                 star.style.left = Math.random() * 100 + "vw";
@@ -392,7 +418,8 @@
         }
         erzeugeVordergrundSterne();
 
-       socket.on('lobbyCreated', ({ pin, kategorie }) => {
+        // --- SERVER EVENTS ---
+        socket.on('lobbyCreated', ({ pin, kategorie }) => {
             meineRaumPin = pin;
             document.getElementById('generated-pin').innerText = pin;
             document.getElementById('chosen-category').innerText = kategorie;
@@ -403,12 +430,10 @@
                 document.getElementById('start-game-btn').classList.remove('hidden');
             }
 
-            // QR CODE GENERATOR HIER MIT ABSOLUTER URL
-            // Trennt eventuelle alte Parameter ab und hängt die joinPin sauber an
             const basisUrl = window.location.href.split('?')[0];
             const beitrittsLink = `${basisUrl}?joinPin=${pin}`;
             
-            document.getElementById('lobby-qrcode').innerHTML = ""; // Altes leeren
+            document.getElementById('lobby-qrcode').innerHTML = ""; 
             new QRCode(document.getElementById('lobby-qrcode'), {
                 text: beitrittsLink,
                 width: 160,
@@ -418,6 +443,7 @@
                 correctLevel : QRCode.CorrectLevel.H
             });
         });
+
         socket.on('updatePlayers', (players) => {
             const list = document.getElementById('lobby-player-list');
             if (list) {
