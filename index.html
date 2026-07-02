@@ -59,35 +59,7 @@
 
     <div class="wrapper">
         
-        <div class="screen" id="start-screen">
-            <header>
-                <div class="logo-container"><div class="logo-ring"></div><div class="earth-sphere"></div><div class="logo-text">R.A.J</div></div>
-                <h1>R.A.J</h1>
-                <p style="color: var(--text-muted); letter-spacing: 2px;">The Ultimate Elimination Quiz</p>
-            </header>
 
-            <div class="main-grid">
-                <div class="card info-section">
-                    <h2>Spielleiter (Großer Bildschirm)</h2>
-                    <p>Möchtest du das Spiel auf diesem Bildschirm für alle sichtbar starten? Deine Freunde können dann per Smartphone beitreten.</p>
-                    <button class="btn-play" onclick="geheZuSpielemenue()">Als Host starten →</button>
-                </div>
-
-                <div class="card join-box">
-                    <h2>Mitspieler Login</h2>
-                    <p style="color: var(--text-muted); margin-bottom: 20px;">Tritt einem bestehenden Spiel bei</p>
-                    <div style="margin-bottom: 15px; text-align: left;">
-                        <label style="font-size: 0.9rem; color: var(--text-muted);">4-stellige Spiel-PIN</label>
-                        <input type="text" id="join-pin" placeholder="z.B. 4839" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 14px; color: #fff; font-size: 1.2rem; border-radius: 8px; text-align: center; letter-spacing: 4px;">
-                    </div>
-                    <div style="margin-bottom: 20px; text-align: left;">
-                        <label style="font-size: 0.9rem; color: var(--text-muted);">Dein Spielername</label>
-                        <input type="text" id="join-name" placeholder="WeltraumDino" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 14px; color: #fff; font-size: 1.1rem; border-radius: 8px;">
-                    </div>
-                    <button class="btn-submit" onclick="spielBeitreten()">Dem Spiel beitreten 🚀</button>
-                </div>
-            </div>
-        </div>
 
         <div class="screen hidden" id="menu-screen">
             <div style="text-align: center; margin-bottom: 30px;">
@@ -127,6 +99,35 @@
                 <h2 style="color: var(--yellow); margin: 15px 0;">Du bist drin!</h2>
                 <p>Schau auf den Hauptbildschirm. Sobald der Spielleiter das Quiz startet, geht es auch auf deinem Handy los!</p>
                 <p style="margin-top: 20px; color: var(--text-muted);">Gewählte Kategorie: <span id="player-screen-cat" style="color:#fff;">-</span></p>
+            </div>
+        </div>
+                <div class="screen" id="start-screen">
+            <header>
+                <div class="logo-container"><div class="logo-ring"></div><div class="earth-sphere"></div><div class="logo-text">R.A.J</div></div>
+                <h1>R.A.J</h1>
+                <p style="color: var(--text-muted); letter-spacing: 2px;">The Ultimate Elimination Quiz</p>
+            </header>
+
+            <div class="main-grid">
+                <div class="card info-section">
+                    <h2>Spielleiter (Großer Bildschirm)</h2>
+                    <p>Möchtest du das Spiel auf diesem Bildschirm für alle sichtbar starten? Deine Freunde können dann per Smartphone beitreten.</p>
+                    <button class="btn-play" onclick="geheZuSpielemenue()">Als Host starten →</button>
+                </div>
+
+                <div class="card join-box">
+                    <h2>Mitspieler Login</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 20px;">Tritt einem bestehenden Spiel bei</p>
+                    <div style="margin-bottom: 15px; text-align: left;">
+                        <label style="font-size: 0.9rem; color: var(--text-muted);">4-stellige Spiel-PIN</label>
+                        <input type="text" id="join-pin" placeholder="z.B. 4839" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 14px; color: #fff; font-size: 1.2rem; border-radius: 8px; text-align: center; letter-spacing: 4px;">
+                    </div>
+                    <div style="margin-bottom: 20px; text-align: left;">
+                        <label style="font-size: 0.9rem; color: var(--text-muted);">Dein Spielername</label>
+                        <input type="text" id="join-name" placeholder="WeltraumDino" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 14px; color: #fff; font-size: 1.1rem; border-radius: 8px;">
+                    </div>
+                    <button class="btn-submit" onclick="spielBeitreten()">Dem Spiel beitreten 🚀</button>
+                </div>
             </div>
         </div>
 
