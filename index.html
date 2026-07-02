@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>R.A.J - The Ultimate Elimination Quiz</title>
-    <!-- Socket.io Verbindung -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -29,7 +28,6 @@
             position: relative;
         }
 
-        /* TIEFEN-GRADIENT IM HINTERGRUND */
         .space-gradient { 
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
             background: 
@@ -39,7 +37,6 @@
             z-index: 0; pointer-events: none; 
         }
 
-        /* SCHICHT 1: STERNE IM HINTERGRUND */
         .bg-stars {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none;
             background-image: 
@@ -53,10 +50,8 @@
             to { background-position: 300px 600px; }
         }
         
-        /* HOUPT-CONTENT-CONTAINER (Z-INDEX 5) */
         .wrapper { position: relative; z-index: 5; max-width: 1150px; margin: 0 auto; padding: 60px 24px; }
         
-        /* SCHICHT 2: STERNE IM VORDERGRUND (Fliegen VOR den Karten!) */
         .fg-stars-container {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10; pointer-events: none;
         }
@@ -72,7 +67,6 @@
             100% { transform: translateY(110vh) translateX(50px) scale(1.2); opacity: 0; }
         }
 
-        /* ORGANISCHE REVEAL-ANIMATION */
         .screen { 
             animation: organicReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
@@ -83,7 +77,7 @@
             to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
-        /* DER ROTIERENDE RAJ-PLANET MIT ECHTEN KONTINENTEN */
+        /* VERFEINERTER ROTIERENDER RAJ-PLANET MIT ORGANISCHEN KONTINENTEN */
         header { text-align: center; margin-bottom: 50px; }
         .logo-container { display: inline-block; position: relative; margin-bottom: 20px; width: 130px; height: 130px; }
         
@@ -95,21 +89,31 @@
         
         .earth-sphere { 
             position: absolute; top: 15px; left: 15px; width: 100px; height: 100px; 
-            border-radius: 50%; background: #0f172a; 
-            box-shadow: inset -15px -15px 30px rgba(0,0,0,0.9), 0 0 30px rgba(0, 242, 254, 0.25); 
+            border-radius: 50%; background: #0c152b; 
+            box-shadow: inset -15px -15px 30px rgba(0,0,0,0.9), 0 0 35px rgba(0, 242, 254, 0.3); 
             overflow: hidden; position: relative;
         }
         
-        /* CSS-Menschlich gezeichnete Kontinente, die um die Kugel rotieren */
+        /* Kontinente geformt aus unregelmäßigen Polygonen per clip-path */
         .continents {
             position: absolute; top: 0; left: 0; width: 200%; height: 100%;
-            background: 
-                radial-gradient(ellipse at 20% 40%, #10b981 15%, transparent 40%),
-                radial-gradient(ellipse at 45% 60%, #059669 20%, transparent 45%),
-                radial-gradient(ellipse at 75% 30%, #10b981 12%, transparent 35%),
-                radial-gradient(ellipse at 90% 70%, #047857 18%, transparent 40%);
-            opacity: 0.75;
-            animation: spinPlanetenKontinente 14s linear infinite;
+            opacity: 0.85;
+            animation: spinPlanetenKontinente 16s linear infinite;
+        }
+        
+        /* Kontinent-Formen als Pseudoelemente simuliert */
+        .continents::before, .continents::after {
+            content: ''; position: absolute; background: linear-gradient(135deg, #10b981, #047857);
+        }
+        /* Kontinent 1 (z.B. links) */
+        .continents::before {
+            top: 20px; left: 15px; width: 60px; height: 55px;
+            clip-path: polygon(30% 10%, 85% 20%, 90% 60%, 45% 95%, 10% 70%, 20% 40%);
+        }
+        /* Kontinent 2 (z.B. rechts versetzt für unendliche Rotation) */
+        .continents::after {
+            top: 30px; left: 115px; width: 55px; height: 50px;
+            clip-path: polygon(20% 20%, 70% 5%, 95% 40%, 60% 80%, 30% 90%, 5% 50%);
         }
         
         @keyframes spinPlanetenKontinente {
@@ -121,7 +125,15 @@
         
         h1 { font-size: 4rem; font-weight: 800; letter-spacing: 10px; background: linear-gradient(135deg, #fff 0%, #94a3b8 50%, var(--accent-orange) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
         
-        /* THE GLASS CARDS */
+        /* GRID & HOST BUTTON FIX */
+        .main-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: stretch; }
+        @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        /* Flexbox-Struktur für Info-Sektion hält alles perfekt im Lot */
+        .info-section {
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+
         .card { 
             background: var(--card-bg); 
             border: 1px solid var(--card-border); 
@@ -131,10 +143,6 @@
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
         }
         
-        .main-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; }
-        @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
-        
-        /* PREMIUM INTERACTION BUTTONS */
         .btn-play { 
             position: relative; overflow: hidden; display: block; width: 100%; text-align: center; 
             background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-orange) 100%); 
@@ -146,19 +154,16 @@
         .btn-play::after { content: ''; position: absolute; top: -50%; left: -60%; width: 30%; height: 200%; background: rgba(255,255,255,0.3); transform: rotate(25deg); transition: none; }
         .btn-play:hover::after { left: 140%; transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
         
-        /* INPUT & SUBMIT FIELD */
         input[type="text"] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); padding: 18px; color: #fff; font-size: 1.1rem; border-radius: 14px; transition: all 0.3s; }
         input[type="text"]:focus { border-color: var(--neon-blue); outline: none; box-shadow: 0 0 20px rgba(0, 242, 254, 0.15); }
         .btn-submit { width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 14px; font-weight: 600; cursor: pointer; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s; }
         .btn-submit:hover { background: #fff; color: #000; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(255,255,255,0.15); }
 
-        /* CATEGORIES */
         .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; margin: 40px 0; }
         .category-card { background: rgba(255, 255, 255, 0.01); border: 1px solid var(--card-border); border-radius: 22px; padding: 40px 25px; text-align: center; cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .category-card:hover { transform: translateY(-8px); border-color: var(--neon-purple); background: rgba(79, 172, 254, 0.04); box-shadow: 0 20px 40px rgba(79, 172, 254, 0.12); }
         .category-icon { font-size: 2.8rem; margin-bottom: 15px; display: block; }
         
-        /* LOBBY & PLAYER GRID */
         .kahoot-lobby { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 40px; align-items: start; }
         @media (max-width: 800px) { .kahoot-lobby { grid-template-columns: 1fr; } }
         .pin-box { text-align: center; background: rgba(0, 0, 0, 0.25); padding: 45px; border-radius: 22px; border: 1px dashed rgba(255,255,255,0.12); }
@@ -167,7 +172,6 @@
         .player-pill { background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 18px; border-radius: 16px; text-align: center; font-weight: 600; }
         .player-pill.eliminated { background: rgba(231, 29, 54, 0.04); border-color: rgba(231, 29, 54, 0.2); color: #f87171; opacity: 0.35; text-decoration: line-through; transform: scale(0.96); }
         
-        /* QUIZ BUTTONS */
         .quiz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; margin-top: 35px; }
         @media (max-width: 600px) { .quiz-container { grid-template-columns: 1fr; } }
         .quiz-opt-btn { 
@@ -178,7 +182,6 @@
         .quiz-opt-btn:hover:not(:disabled) { border-color: #fff; background: rgba(255, 255, 255, 0.04); transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
         .quiz-opt-btn:disabled { cursor: not-allowed; }
         
-        /* OVERLAY WINDOW (THE KINO GLASS BLUR) */
         .result-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -211,11 +214,8 @@
 
     <div class="space-gradient"></div>
     <div class="bg-stars"></div>
-
-    <!-- SCHICHT 2: VORDERGRUND STERNE EVENT LAYER -->
     <div id="foreground-stars" class="fg-stars-container"></div>
 
-    <!-- OVERLAY WINDOW -->
     <div id="result-overlay" class="result-overlay">
         <div class="result-box">
             <span id="res-icon" class="result-icon">✨</span>
@@ -226,10 +226,8 @@
 
     <div class="wrapper">
 
-        <!-- SCREEN 1: STARTSEITE -->
         <div class="screen" id="start-screen">
             <header>
-                <!-- PLANET JETZT MIT ANIMIERTEN LANDMASSEN -->
                 <div class="logo-container">
                     <div class="logo-ring"></div>
                     <div class="earth-sphere">
@@ -244,9 +242,11 @@
 
             <div class="main-grid">
                 <div class="card info-section">
-                    <h2>Spielleiter (Großer Bildschirm)</h2>
-                    <p style="margin-top: 10px;">Eröffne ein neues Match auf diesem Display. Deine Mitspieler können die PIN einscannen und treten per Smartphone live an.</p>
-                    <button class="btn-play" onclick="geheZuSpielemenue()">Als Host starten →</button>
+                    <div>
+                        <h2 style="font-size: 1.6rem; font-weight: 600; color: #fff;">Spielleiter (Großer Bildschirm)</h2>
+                        <p style="margin-top: 15px; color: var(--text-muted); line-height: 1.75;">Eröffne ein neues Match auf diesem Display. Deine Mitspieler können die PIN einscannen und treten per Smartphone live an.</p>
+                    </div>
+                    <button class="btn-play" style="margin-top: 30px;" onclick="geheZuSpielemenue()">Als Host starten →</button>
                 </div>
 
                 <div class="card join-box">
@@ -265,7 +265,6 @@
             </div>
         </div>
 
-        <!-- SCREEN 2: KATEGORIEN-AUSWAHL -->
         <div class="screen hidden" id="menu-screen">
             <div style="text-align: center; margin-bottom: 40px;">
                 <h2 style="font-size: 2.2rem; font-weight: 700;">Kategorie wählen</h2>
@@ -279,7 +278,6 @@
             </div>
         </div>
 
-        <!-- SCREEN 3: LOBBY -->
         <div class="screen hidden" id="lobby-screen">
             <div style="text-align: center; margin-bottom: 40px;">
                 <h2 style="font-size: 2rem;">Warten auf Crew-Mitglieder</h2>
@@ -299,7 +297,6 @@
             </div>
         </div>
 
-        <!-- SCREEN 4: MITSPIELER WARTE-SCREEN -->
         <div class="screen hidden" id="player-wait-screen" style="text-align: center; max-width: 480px; margin: 40px auto;">
             <div class="card">
                 <span style="font-size: 3.5rem; display: block; margin-bottom: 15px;">🛸</span>
@@ -311,7 +308,6 @@
             </div>
         </div>
 
-        <!-- SCREEN 5: LIVE QUIZ SPIELFELD -->
         <div class="screen hidden" id="quiz-screen" style="max-width: 850px; margin: 0 auto; text-align: center;">
             <div class="card" style="padding: 50px 40px;">
                 <h2 id="quiz-info" style="font-size: 1.3rem; font-weight: 500; margin-bottom: 15px; letter-spacing: 0.5px;">Wer führt den Zug aus?</h2>
@@ -320,7 +316,6 @@
             </div>
         </div>
 
-        <!-- SCREEN 6: GAME OVER SCREEN -->
         <div class="screen hidden" id="game-over-screen" style="text-align: center; max-width: 550px; margin: 50px auto;">
             <div class="card" style="padding: 50px 40px;">
                 <span style="font-size: 4.5rem; display: block; margin-bottom: 15px;">👑</span>
@@ -339,32 +334,24 @@
         let ichBinHost = false;
         let meineRaumPin = null;
 
-        // --- HANDGEMACHTES SMART VORDERGRUND STERNE-GENERATOR SYSTEM ---
         function erzeugeVordergrundSterne() {
             const container = document.getElementById('foreground-stars');
             container.innerHTML = "";
-            const anzahlSterne = 15; // Dezent, damit es nicht ablenkt
+            const anzahlSterne = 12; 
             
             for(let i=0; i<anzahlSterne; i++) {
                 const star = document.createElement('div');
                 star.className = "foreground-star";
-                
-                // Zufällige organische Streuung
                 star.style.left = Math.random() * 100 + "vw";
-                star.style.width = (Math.random() * 2 + 1.5) + "px";
+                star.style.width = (Math.random() * 2.5 + 1.5) + "px";
                 star.style.height = star.style.width;
-                
-                // Versetzte Start- und Flugzeiten für natürliche Verteilung
-                star.style.animationDuration = (Math.random() * 8 + 6) + "s";
+                star.style.animationDuration = (Math.random() * 7 + 6) + "s";
                 star.style.animationDelay = (Math.random() * -12) + "s";
-                
                 container.appendChild(star);
             }
         }
-        // Direkt beim Starten ausführen
         erzeugeVordergrundSterne();
 
-        // --- SOCKET LOGIK CONTROLLER ---
         socket.on('lobbyCreated', ({ pin, kategorie }) => {
             meineRaumPin = pin;
             document.getElementById('generated-pin').innerText = pin;
