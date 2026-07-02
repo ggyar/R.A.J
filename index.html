@@ -392,7 +392,7 @@
         }
         erzeugeVordergrundSterne();
 
-        socket.on('lobbyCreated', ({ pin, kategorie }) => {
+       socket.on('lobbyCreated', ({ pin, kategorie }) => {
             meineRaumPin = pin;
             document.getElementById('generated-pin').innerText = pin;
             document.getElementById('chosen-category').innerText = kategorie;
@@ -403,9 +403,10 @@
                 document.getElementById('start-game-btn').classList.remove('hidden');
             }
 
-            // QR CODE GENERATOR AKTIVIEREN
-            // Erstellt einen Link, der die PIN direkt als URL-Parameter übergibt
-            const beitrittsLink = `${window.location.origin}${window.location.pathname}?joinPin=${pin}`;
+            // QR CODE GENERATOR HIER MIT ABSOLUTER URL
+            // Trennt eventuelle alte Parameter ab und hängt die joinPin sauber an
+            const basisUrl = window.location.href.split('?')[0];
+            const beitrittsLink = `${basisUrl}?joinPin=${pin}`;
             
             document.getElementById('lobby-qrcode').innerHTML = ""; // Altes leeren
             new QRCode(document.getElementById('lobby-qrcode'), {
@@ -417,7 +418,6 @@
                 correctLevel : QRCode.CorrectLevel.H
             });
         });
-
         socket.on('updatePlayers', (players) => {
             const list = document.getElementById('lobby-player-list');
             if (list) {
