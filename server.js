@@ -14,32 +14,51 @@ const io = new Server(server, {
     }
 });
 
-// Speicher für alle aktiven Lobbys
 const lobbys = {}; 
 
-// Quizfragen-Katalog für die Kategorien
+// MASSIV ERWEITERTER FRAGENKATALOG
 const fragenKatalog = {
     "Allgemeines": [
         { q: "Wie viele Bundesländer hat Deutschland?", opts: ["12", "14", "16", "18"], correct: 2 },
-        { q: "Was ist das chemische Symbol für Wasser?", opts: ["H2O", "O2", "CO2", "HO"], correct: 0 }
+        { q: "Was ist das chemische Symbol für Wasser?", opts: ["H2O", "O2", "CO2", "HO"], correct: 0 },
+        { q: "Welches Element ist am häufigsten in der Erdatmosphäre vorhanden?", opts: ["Sauerstoff", "Stickstoff", "Wasserstoff", "Kohlendioxid"], correct: 1 },
+        { q: "Wie viele Zähne hat ein erwachsener Mensch normalerweise (ohne Weisheitszähne)?", opts: ["28", "30", "32", "34"], correct: 0 },
+        { q: "Welches Gebrechen veranlasste Beethoven, seine Musik hauptsächlich im Kopf zu komponieren?", opts: ["Blindheit", "Taubheit", "Lähmung", "Stummheit"], correct: 1 },
+        { q: "In welchem Jahr fiel die Berliner Mauer?", opts: ["1985", "1989", "1991", "1995"], correct: 1 },
+        { q: "Wer erfand den modernen Buchdruck?", opts: ["Johannes Gutenberg", "Albert Einstein", "Leonardo da Vinci", "Nikola Tesla"], correct: 0 },
+        { q: "Wie viele Planeten hat unser Sonnensystem?", opts: ["7", "8", "9", "10"], correct: 1 }
     ],
     "Die Welt": [
         { q: "Welcher Fluss ist der längste der Welt?", opts: ["Nil", "Amazonas", "Mississippi", "Donau"], correct: 0 },
-        { q: "Welches Land ist flächenmäßig das größte der Erde?", opts: ["Kanada", "USA", "Russland", "China"], correct: 2 }
+        { q: "Welches Land ist flächenmäßig das größte der Erde?", opts: ["Kanada", "USA", "Russland", "China"], correct: 2 },
+        { q: "Welcher Ozean ist der tiefste der Welt?", opts: ["Atlantischer Ozean", "Indischer Ozean", "Pazifischer Ozean", "Arktischer Ozean"], correct: 2 },
+        { q: "In welchem Land befindet sich das weltberühmte Bauwerk 'Taj Mahal'?", opts: ["Indien", "Pakistan", "Ägypten", "Thailand"], correct: 0 },
+        { q: "Welches Gebirge trennt Europa von Asien?", opts: ["Alpen", "Ural", "Anden", "Himalaya"], correct: 1 },
+        { q: "Wie heißt die trockene Wüste im Norden Chiles?", opts: ["Sahara", "Gobi", "Atacama", "Kalahari"], correct: 2 },
+        { q: "Welche Meerenge trennt Spanien von Marokko?", opts: ["Straße von Gibraltar", "Bosporus", "Ärmelkanal", "Sueskanal"], correct: 0 }
     ],
     "Kontinente": [
-        { q: "Welcher Kontinent ist der größte?", opts: ["Afrika", "Asien", "Nordamerika", "Europa"], correct: 1 }
+        { q: "Welcher Kontinent ist der größte?", opts: ["Afrika", "Asien", "Nordamerika", "Europa"], correct: 1 },
+        { q: "Auf welchem Kontinent liegt der Südpol?", opts: ["Antarktis", "Arktis", "Australien", "Südamerika"], correct: 0 },
+        { q: "Welcher Kontinent hat die meisten Einwohner?", opts: ["Europa", "Afrika", "Asien", "Nordamerika"], correct: 2 },
+        { q: "Auf welchem Kontinent liegt die Sahara-Wüste?", opts: ["Asien", "Australien", "Afrika", "Südamerika"], correct: 2 },
+        { q: "Welcher Kontinent ist gleichzeitig ein einzelner Staat?", opts: ["Antarktis", "Südamerika", "Europa", "Australien"], correct: 3 },
+        { q: "Durch welche zwei Kontinente verläuft der Äquator hauptsächlich?", opts: ["Afrika & Südamerika", "Asien & Europa", "Nordamerika & Afrika", "Australien & Asien"], correct: 0 }
     ],
     "Länder": [
-        { q: "Was ist die Hauptstadt von Australien?", opts: ["Sydney", "Melbourne", "Canberra", "Brisbane"], correct: 2 }
+        { q: "Was ist die Hauptstadt von Australien?", opts: ["Sydney", "Melbourne", "Canberra", "Brisbane"], correct: 2 },
+        { q: "Welches europäische Land wird oft als 'die Wiege der Demokratie' bezeichnet?", opts: ["Italien", "Griechenland", "Frankreich", "Großbritannien"], correct: 1 },
+        { q: "Welches Land schenkte den USA die berühmte Freiheitsstatue?", opts: ["Deutschland", "Frankreich", "Spanien", "Italien"], correct: 1 },
+        { q: "In welchem Land trinkt man statistisch gesehen den meisten Kaffee pro Kopf?", opts: ["Finnland", "Italien", "Brasilien", "Kolumbien"], correct: 0 },
+        { q: "Welches Land hat die meisten Zeitzonen auf der Welt?", opts: ["Russland", "USA", "China", "Frankreich"], correct: 3 },
+        { q: "Welches Land ist für seine Ahornblätter auf der Nationalflagge bekannt?", opts: ["Kanada", "Japan", "Schweden", "Österreich"], correct: 0 },
+        { q: "Zu welchem Land gehört die Insel Grönland politisch gesehen?", opts: ["Kanada", "Island", "Norwegen", "Dänemark"], correct: 3 }
     ]
 };
 
-// --- HIER STARTET DIE VERBINDUNGSSCHLEIFE ---
 io.on('connection', (socket) => {
     console.log(`Benutzer verbunden: ${socket.id}`);
 
-    // 1. Lobby erstellen
     socket.on('createLobby', (kategorie) => {
         const pin = Math.floor(1000 + Math.random() * 9000).toString();
         
@@ -58,7 +77,6 @@ io.on('connection', (socket) => {
         socket.emit('lobbyCreated', { pin, kategorie });
     });
 
-    // 2. Spieler tritt bei
     socket.on('joinLobby', ({ pin, name }) => {
         const lobby = lobbys[pin];
         if (!lobby) {
@@ -78,7 +96,6 @@ io.on('connection', (socket) => {
         io.to(pin).emit('updatePlayers', lobby.players);
     });
 
-    // 3. Spiel starten (JETZT KORREKT INNEN DRIN!)
     socket.on('startGameServer', (pin) => {
         const lobby = lobbys[pin];
         
@@ -100,7 +117,6 @@ io.on('connection', (socket) => {
         sendeNeueRunde(pin);
     });
 
-    // 4. Antwort auswerten
     socket.on('submitAnswer', ({ pin, answerIndex }) => {
         const lobby = lobbys[pin];
         if (!lobby) return;
@@ -122,6 +138,7 @@ io.on('connection', (socket) => {
         io.to(pin).emit('turnResult', { player: aktiverSpieler.name, success: erfolg, msg: nachricht });
         io.to(pin).emit('updatePlayers', lobby.players);
 
+        // Geht zur nächsten Frage über (fängt von vorne an, falls alle durch sind)
         lobby.aktuelleFrageIndex = (lobby.aktuelleFrageIndex + 1) % lobby.fragen.length;
         lobby.currentTurnIndex = (lobby.currentTurnIndex + 1) % lobby.players.length;
 
@@ -130,15 +147,11 @@ io.on('connection', (socket) => {
         }, 3000);
     });
 
-    // Verbindung trennen
     socket.on('disconnect', () => {
         console.log(`Benutzer getrennt: ${socket.id}`);
     });
 });
-// --- ENDE DER VERBINDUNGSSCHLEIFE ---
 
-
-// Hilfsfunktion zur Rundensteuerung (Steht außerhalb, da sie io.to benutzt)
 function sendeNeueRunde(pin) {
     const lobby = lobbys[pin];
     if (!lobby) return;
