@@ -79,7 +79,7 @@
             to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
-        /* ERDE MIT REALISTISCHEN GEOGRAPHISCHEN REPRODUKTIONEN VIA CSS */
+       /* ERDE MIT REALISTISCHEN GEOGRAPHISCHEN REPRODUKTIONEN VIA CSS */
         header { text-align: center; margin-bottom: 50px; }
         .logo-container { display: inline-block; position: relative; margin-bottom: 20px; width: 140px; height: 140px; }
         
@@ -96,40 +96,46 @@
             overflow: hidden; position: relative;
         }
         
-        /* Das lange, rotierende Kontinentband (Doppeltes Set für nahtlosen Loop) */
+        /* Das lange, rotierende Kontinentband (Breite auf 400px erhöht für alle Kontinente) */
         .continents {
-            position: absolute; top: 0; left: 0; width: 200%; height: 100%;
+            position: absolute; top: 0; left: 0; width: 400px; height: 100%;
             opacity: 0.85;
-            animation: spinPlanetenKontinente 24s linear infinite;
+            animation: spinPlanetenKontinente 20s linear infinite;
         }
         
-        /* Die exakten geographischen Polygone für die Kontinente */
+        /* Die geographischen Polygone für die Kontinente */
         .continent-shape {
             position: absolute; background: linear-gradient(135deg, #10b981, #047857);
         }
         
-        /* --- SET 1 --- */
-        /* Nordamerika */
-        .continents .na1 { top: 15px; left: 10px; width: 45px; height: 35px; clip-path: polygon(0% 20%, 40% 10%, 80% 0%, 100% 30%, 80% 70%, 50% 100%, 30% 80%, 15% 90%); }
-        /* Südamerika */
-        .continents .sa1 { top: 48px; left: 25px; width: 30px; height: 45px; clip-path: polygon(10% 10%, 90% 5%, 80% 35%, 40% 70%, 30% 100%, 20% 70%, 5% 40%); }
-        /* Afrika */
-        .continents .af1 { top: 35px; left: 70px; width: 40px; height: 45px; clip-path: polygon(0% 10%, 45% 0%, 95% 20%, 90% 45%, 60% 70%, 50% 100%, 35% 85%, 25% 45%); }
-        /* Eurasien */
-        .continents .eu1 { top: 10px; left: 65px; width: 65px; height: 35px; clip-path: polygon(0% 50%, 20% 20%, 50% 10%, 95% 15%, 100% 60%, 75% 85%, 50% 75%, 25% 90%); }
-        /* Australien */
-        .continents .au1 { top: 60px; left: 115px; width: 25px; height: 20px; clip-path: polygon(10% 40%, 50% 10%, 90% 20%, 95% 70%, 60% 95%, 20% 80%); }
-
-        /* --- SET 2 (Exakt +140px versetzt für den endlosen Loop) --- */
-        .continents .na2 { top: 15px; left: 150px; width: 45px; height: 35px; clip-path: polygon(0% 20%, 40% 10%, 80% 0%, 100% 30%, 80% 70%, 50% 100%, 30% 80%, 15% 90%); }
-        .continents .sa2 { top: 48px; left: 165px; width: 30px; height: 45px; clip-path: polygon(10% 10%, 90% 5%, 80% 35%, 40% 70%, 30% 100%, 20% 70%, 5% 40%); }
-        .continents .af2 { top: 35px; left: 210px; width: 40px; height: 45px; clip-path: polygon(0% 10%, 45% 0%, 95% 20%, 90% 45%, 60% 70%, 50% 100%, 35% 85%, 25% 45%); }
-        .continents .eu2 { top: 10px; left: 205px; width: 65px; height: 35px; clip-path: polygon(0% 50%, 20% 20%, 50% 10%, 95% 15%, 100% 60%, 75% 85%, 50% 75%, 25% 90%); }
-        .continents .au2 { top: 60px; left: 255px; width: 25px; height: 20px; clip-path: polygon(10% 40%, 50% 10%, 90% 20%, 95% 70%, 60% 95%, 20% 80%); }
+        /* --- REALE KONTINENT-KETTE (Nacheinander aufgereiht) --- */
         
+        /* Nordamerika (Nord-West) */
+        .continents .na1 { top: 12px; left: 15px; width: 40px; height: 30px; clip-path: polygon(0% 20%, 40% 10%, 80% 0%, 100% 40%, 80% 70%, 50% 100%, 20% 70%); }
+        
+        /* Südamerika (Süd-West) */
+        .continents .sa1 { top: 45px; left: 30px; width: 28px; height: 42px; clip-path: polygon(10% 10%, 90% 5%, 80% 35%, 40% 70%, 20% 100%, 5% 40%); }
+        
+        /* Afrika (Zentrum) */
+        .continents .af1 { top: 38px; left: 85px; width: 38px; height: 45px; clip-path: polygon(0% 15%, 50% 0%, 95% 15%, 90% 45%, 60% 75%, 45% 100%, 30% 85%, 15% 50%); }
+        
+        /* Eurasien (Nord-Ost) */
+        .continents .eu1 { top: 8px; left: 110px; width: 65px; height: 35px; clip-path: polygon(0% 60%, 20% 20%, 60% 10%, 95% 15%, 100% 60%, 75% 90%, 40% 80%); }
+        
+        /* Australien (Süd-Ost) */
+        .continents .au1 { top: 62px; left: 155px; width: 26px; height: 20px; clip-path: polygon(10% 40%, 50% 10%, 90% 20%, 95% 70%, 60% 95%, 20% 80%); }
+
+        /* --- SET 2: Exakter Klon (Um genau 200px nach rechts verschoben für nahtlosen Übergang) --- */
+        .continents .na2 { top: 12px; left: 215px; width: 40px; height: 30px; clip-path: polygon(0% 20%, 40% 10%, 80% 0%, 100% 40%, 80% 70%, 50% 100%, 20% 70%); }
+        .continents .sa2 { top: 45px; left: 230px; width: 28px; height: 42px; clip-path: polygon(10% 10%, 90% 5%, 80% 35%, 40% 70%, 20% 100%, 5% 40%); }
+        .continents .af2 { top: 38px; left: 285px; width: 38px; height: 45px; clip-path: polygon(0% 15%, 50% 0%, 95% 15%, 90% 45%, 60% 75%, 45% 100%, 30% 85%, 15% 50%); }
+        .continents .eu2 { top: 8px; left: 310px; width: 65px; height: 35px; clip-path: polygon(0% 60%, 20% 20%, 60% 10%, 95% 15%, 100% 60%, 75% 90%, 40% 80%); }
+        .continents .au2 { top: 62px; left: 355px; width: 26px; height: 20px; clip-path: polygon(10% 40%, 50% 10%, 90% 20%, 95% 70%, 60% 95%, 20% 80%); }
+        
+        /* Animation verschiebt das Band jetzt exakt um die Breite eines Sets (200px) */
         @keyframes spinPlanetenKontinente {
             0% { transform: translateX(0); }
-            100% { transform: translateX(-140px); }
+            100% { transform: translateX(-200px); }
         }
         
         .logo-text { position: absolute; width: 100%; text-align: center; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Impact', 'Arial Black', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: 3px; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.9); z-index: 3; }
