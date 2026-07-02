@@ -1,7 +1,7 @@
 {
-  "name": "raj-quiz-backend",
+  "name": "r-a-j",
   "version": "1.0.0",
-  "description": "Backend für das R.A.J Quiz",
+  "description": "",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
