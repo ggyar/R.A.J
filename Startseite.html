@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R.A.J - Das ultimative Eliminations-Quiz</title>
+    <style>
+        /* --- HIGH PERFORMANCE RESET --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        :root {
+            --bg-deep-space: #05070a;
+            --bg-menu-dark: #0a0f14;
+            --bg-card: rgba(15, 20, 28, 0.85);
+            --border-glow: rgba(255, 183, 3, 0.2);
+            --white: #ffffff;
+            --yellow: #ffb703;
+            --orange: #ff6b35;
+            --text-muted: #8a99a8;
+        }
+
+        body {
+            background-color: var(--bg-deep-space);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- OPTIMIERTE HINTERGRUND-GRAFIK (KEIN PERFORMANCE-LOSS) --- */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .space-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, rgba(30, 40, 60, 0.3) 0%, #05070a 80%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* --- SCREEN MANAGEMENT --- */
+        .wrapper {
+            position: relative;
+            z-index: 2;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .screen {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .hidden {
+            display: none !important;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        /* --- PERFORMANCE LOGO (OHNE EXTERNE BILDER) --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-container {
+            display: inline-block;
+            position: relative;
+            margin-bottom: 10px;
+            width: 120px;
+            height: 120px;
+        }
+
+        .logo-ring {
+            position: absolute;
+            top: 0; left: 0; width: 120px; height: 120px;
+            border: 3px dashed var(--orange);
+            border-radius: 50%;
+            animation: rotateRing 25s linear infinite;
+        }
+
+        /* Hochperformante CSS-Erde statt schwerer Textur */
+        .earth-sphere {
+            position: absolute;
+            top: 12px; left: 12px; width: 96px; height: 96px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #1a75ff, #002b80);
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.6), 0 0 15px rgba(26,117,255,0.4);
+            overflow: hidden;
+        }
+
+        /* Angedeutete Kontinente, die sich flüssig bewegen */
+        .earth-sphere::before {
+            content: '🌍';
+            position: absolute;
+            font-size: 70px;
+            top: 10px; left: 12px;
+            opacity: 0.7;
+            animation: spinGlobe 12s linear infinite;
+        }
+
+        .logo-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Arial Black', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--white);
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            background: linear-gradient(45deg, var(--white), var(--yellow), var(--orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- GRID & CARDS --- */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .info-section h2 {
+            font-size: 1.8rem; margin-bottom: 20px; color: var(--yellow);
+            border-left: 4px solid var(--orange); padding-left: 15px;
+        }
+
+        .info-section p { color: #cbd5e1; line-height: 1.7; font-size: 1.05rem; margin-bottom: 20px; }
+        .highlight-text { color: var(--white); font-weight: 700; background: rgba(255,107,53,0.2); padding: 2px 6px; border-radius: 4px; }
+
+        .btn-play {
+            display: block; width: 100%; text-align: center;
+            background: linear-gradient(135deg, var(--yellow) 0%, var(--orange) 100%);
+            color: #000; font-size: 1.3rem; font-weight: 800; border-radius: 12px;
+            padding: 18px; text-transform: uppercase; cursor: pointer; border: none; transition: transform 0.2s;
+        }
+        .btn-play:hover { transform: translateY(-2px); }
+
+        /* --- TABS & FORMS --- */
+        .tabs { display: flex; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); font-size: 1.1rem; font-weight: 600; padding: 12px; cursor: pointer; }
+        .tab-btn.active { color: var(--white); border-bottom: 2px solid var(--orange); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
+        .form-group input { width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; color: var(--white); font-size: 1rem; }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+        .btn-submit { width: 100%; background: transparent; border: 2px solid rgba(255,255,255,0.2); color: var(--white); padding: 14px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-submit:hover { background: var(--white); color: #000; }
+
+        /* --- KATEGORIEN --- */
+        .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin: 30px 0; }
+        .category-card { background: rgba(20, 26, 35, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 25px; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
+        .category-card:hover { transform: translateY(-3px); border-color: var(--yellow); }
+        .category-icon { font-size: 2.2rem; margin-bottom: 10px; display: block; }
+
+        /* --- KAHOOT LOBBY BEREICH --- */
+        .kahoot-lobby {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        @media (max-width: 800px) { .kahoot-lobby { grid-template-columns: 1fr; } }
+
+        .pin-box {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 30px;
+            border-radius: 12px;
+            border: 2px dashed var(--yellow);
+        }
+
+        .game-pin {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--yellow);
+            letter-spacing: 5px;
+            margin: 15px 0;
+            text-shadow: 0 0 10px rgba(255,183,3,0.3);
+        }
+
+        .qr-placeholder {
+            width: 140px;
+            height: 140px;
+            background: white;
+            margin: 20px auto;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .player-count {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            list-style: none;
+        }
+
+        .player-pill {
+            background: linear-gradient(90deg, #1e252b, #2a343d);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            border-left: 4px solid var(--orange);
+            animation: popIn 0.3s ease-out;
+        }
+
+        /* --- ANIMATIONEN CORE --- */
+        @keyframes rotateRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spinGlobe { 
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="space-gradient" id="space-grad"></div>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="wrapper">
+        
+        <div class="screen" id="start-screen">
+            <header>
+                <div class="logo-container">
+                    <div class="logo-ring"></div>
+                    <div class="earth-sphere"></div>
+                    <div class="logo-text">R.A.J</div>
+                </div>
+                <h1>R.A.J</h1>
+                <p style="color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase;">The Ultimate Elimination Quiz</p>
+            </header>
+
+            <div class="main-grid">
+                <div class="card info-section">
+                    <h2>Worum geht es?</h2>
+                    <p>Bereit für den ultimativen Nervenkitzel im Orbit? <span class="highlight-text">R.A.J</span> ist ein rundenbasiertes Party-Quiz, bei dem Fehler eiskalt bestraft werden. Alle Spieler treten der Reihe nach an und müssen allgemeine Fragen beantworten.</p>
+                    <p>Das Spiel beginnt extrem leicht, zieht aber mit jeder Runde spürbar an. **Das Besondere:** Sobald ein Spieler eine falsche Antwort gibt, fliegt er sofort raus – und für die verbliebenen Spieler schaltet das System augenblicklich auf die nächsthöhere Stufe! Wer bleibt übrig?</p>
+                    <button class="btn-play" onclick="geheZuSpielemenue()">Zum Spielemenü →</button>
+                </div>
+
+                <div class="card auth-section">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('login')">Anmelden</button>
+                        <button class="tab-btn" onclick="switchTab('register')">Registrieren</button>
+                    </div>
+                    <form id="login-form" class="auth-form active" onsubmit="event.preventDefault();">
+                        <div class="form-group"><label>Username</label><input type="text" placeholder="WeltraumDino"></div>
+                        <div class="form-group"><label>Passwort</label><input type="password" placeholder="••••••••"></div>
+                        <button type="submit" class="btn-submit">Spielprofil laden</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="screen hidden" id="menu-screen">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h2>Wähle deine Kategorie</h2>
+                <p style="color: var(--yellow);">Bestimme das Thema für deine kommende Quiz-Runde</p>
+            </div>
+
+            <div class="category-grid">
+                <div class="category-card" onclick="selectCategory(this)">
+                    <span class="category-icon">💡</span><h3>Allgemeines</h3>
+                </div>
+                <div class="category-card" onclick="selectCategory(this)">
+                    <span class="category-icon">🌍</span><h3>Die Welt</h3>
+                </div>
+                <div class="category-card" onclick="selectCategory(this)">
+                    <span class="category-icon">🗺️</span><h3>Kontinente</h3>
+                </div>
+                <div class="category-card" onclick="selectCategory(this)">
+                    <span class="category-icon">🏳️‍🌈</span><h3>Länder</h3>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn-back" onclick="geheZuStartseite()">← Zurück</button>
+            </div>
+        </div>
+
+        <div class="screen hidden" id="lobby-screen">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h2>Lobby wird erstellt...</h2>
+                <p>Kategorie: <span id="chosen-category" style="color: var(--orange); font-weight: bold;">-</span></p>
+            </div>
+
+            <div class="kahoot-lobby">
+                <div class="card pin-box">
+                    <h3>Mit Smartphone beitreten:</h3>
+                    <p style="color: var(--text-muted); margin-top: 5px;">Gehe auf raj-quiz.de oder scanne:</p>
+                    
+                    <div class="qr-placeholder">
+                        [ QR CODE ]
+                    </div>
+
+                    <p style="font-size: 0.9rem; text-transform: uppercase; color: var(--text-muted);">Spiel-PIN:</p>
+                    <div class="game-pin" id="generated-pin">0000</div>
+                </div>
+
+                <div class="card">
+                    <div class="player-count">Warte auf Spieler... (<span id="count-number">0</span>)</div>
+                    
+                    <ul class="player-grid" id="lobby-player-list">
+                        <li class="player-pill">SpielMaster (Du)</li>
+                    </ul>
+
+                    <button class="btn-play" style="margin-top: 30px;" onclick="alert('Hier startet das Quiz auf allen Geräten gleichzeitig!')">Spiel starten 🚀</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Tab-Wechsel
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if (tab === 'login') { document.getElementById('login-form').classList.add('active'); }
+            event.target.classList.add('active');
+        }
+
+        // Navigation
+        function geheZuSpielemenue() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+        }
+
+        function geheZuStartseite() {
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+
+        // Kategorie wählen -> Generiert zufälligen PIN (Kahoot Style)
+        function selectCategory(element) {
+            const kat = element.querySelector('h3').innerText;
+            document.getElementById('chosen-category').innerText = kat;
+
+            // Generiere zufälligen 4-stelligen Code
+            const randomPin = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('generated-pin').innerText = randomPin;
+
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('lobby-screen').classList.remove('hidden');
+
+            // Simulation: Nach 3 Sekunden tritt ein Kumpel per Handy bei
+            setTimeout(() => {
+                const list = document.getElementById('lobby-player-list');
+                list.innerHTML += `<li class="player-pill">BesterKumpel🔥</li>`;
+                document.getElementById('count-number').innerText = "2";
+            }, 3000);
+        }
+
+        // --- HINTERGRUND STERNE ENGINE (OPTIEMIERT AUF PERFORMANCE) ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        let stars = [];
+        for (let i = 0; i < 60; i++) { // Weniger Sterne für maximale Performance
+            stars.push({ x: Math.random() * width, y: Math.random() * height, size: Math.random() * 1.2, speed: Math.random() * 0.02 + 0.005 });
+        }
+
+        const emojisToFly = ['🗽', '🚀', '🛸'];
+        const emojis = [{ x: Math.random() * width, y: -50, text: '🚀', size: 25, speedY: 0.3, rotation: 0 }];
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+            
+            stars.forEach(s => {
+                s.y += s.speed * height * 0.05;
+                if (s.y > height) s.y = 0;
+                ctx.fillRect(s.x, s.y, s.size, s.size); // Flat rect ist schneller als arc()!
+            });
+
+            emojis.forEach(e => {
+                e.y += e.speedY;
+                if (e.y > height + 50) { e.y = -50; e.x = Math.random() * width; }
+                ctx.font = `${e.size}px serif`;
+                ctx.fillText(e.text, e.x, e.y);
+            });
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
+
