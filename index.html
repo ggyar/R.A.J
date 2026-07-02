@@ -21,6 +21,23 @@
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
+        /* Navigation & Counter Styles */
+        .nav-controls {
+    position: fixed; top: 20px; left: 20px; z-index: 100;
+        }
+        .btn-back {
+         background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+         color: white; padding: 10px 20px; border-radius: 12px; cursor: pointer;
+         font-size: 0.9rem; backdrop-filter: blur(5px); transition: 0.3s;
+        }
+        .btn-back:hover { background: rgba(255,255,255,0.15); border-color: var(--accent-orange); }
+
+        .live-badge {
+            position: fixed; top: 20px; right: 20px; z-index: 100;
+            background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.2);
+            padding: 8px 15px; border-radius: 20px; color: var(--neon-blue);
+            font-size: 0.85rem; font-weight: 600;
+        }
         
         body { 
             background-color: var(--bg-dark); 
@@ -242,6 +259,13 @@
     </style>
 </head>
 <body>
+    <!-- Überall sichtbare Steuerung -->
+<div class="nav-controls">
+    <button id="btn-back" class="btn-back hidden" onclick="navigateBack()">← Zurück</button>
+</div>
+<div class="live-badge">
+    📡 <span id="player-count">0</span> Spieler online
+</div>
 
     <div class="space-gradient"></div>
     <div class="bg-stars"></div>
@@ -258,7 +282,7 @@
     <div class="wrapper">
 
         <div class="screen" id="start-screen">
-<header>
+            <header>
                 <div class="logo-container">
                     <div class="logo-ring"></div>
                     <div class="earth-sphere">
@@ -581,6 +605,37 @@
             socket.emit('joinLobby', { pin: pinInput, name: nameInput });
         }
         function hostStartetSpiel() { if (meineRaumPin) { socket.emit('startGameServer', meineRaumPin); } }
+        // --- NAVIGATIONS-SYSTEM & PLAYER COUNT ---
+let currentScreen = "start-screen";
+
+function showScreen(screenId) {
+    // 1. Alle Screens verstecken
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    
+    // 2. Ziel-Screen zeigen
+    document.getElementById(screenId).classList.remove('hidden');
+    currentScreen = screenId;
+
+    // 3. Zurück-Button Logik: Auf Startseite verstecken
+    const backBtn = document.getElementById('btn-back');
+    if (screenId === 'start-screen') {
+        backBtn.classList.add('hidden');
+    } else {
+        backBtn.classList.remove('hidden');
+    }
+}
+
+function navigateBack() {
+    // Hier definierst du, von wo nach wo der Zurück-Button führt
+    if (currentScreen === 'menu-screen') showScreen('start-screen');
+    if (currentScreen === 'lobby-screen') showScreen('menu-screen');
+    if (currentScreen === 'quiz-screen') showScreen('lobby-screen'); // falls nötig
+}
+
+// Socket: Live-Zähler empfangen (Das kommt zu deinen anderen socket.on(...) Funktionen)
+socket.on('playerCountUpdate', (count) => {
+    document.getElementById('player-count').innerText = count;
+});
     </script>
 </body>
 </html>
