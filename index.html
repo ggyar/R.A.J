@@ -4,203 +4,254 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>R.A.J - The Ultimate Elimination Quiz</title>
+    <!-- Socket.io Verbindung -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         
         :root {
-            --bg-dark: #060913;
-            --card-bg: rgba(13, 20, 38, 0.45);
-            --card-border: rgba(255, 255, 255, 0.07);
+            --bg-dark: #04060f;
+            --card-bg: rgba(11, 17, 34, 0.45);
+            --card-border: rgba(255, 255, 255, 0.06);
             --accent-yellow: #ffb703;
             --accent-orange: #ff6b35;
             --neon-blue: #00f2fe;
             --neon-purple: #4facfe;
-            --success-glow: rgba(46, 196, 182, 0.15);
-            --danger-glow: rgba(231, 29, 54, 0.15);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
         
-        /* HIGH-END PARALLAX STERNENHIMMEL */
         body { 
             background-color: var(--bg-dark); 
             color: var(--text-main); 
             min-height: 100vh; 
             overflow-x: hidden; 
             position: relative;
-            background-image: 
-                radial-gradient(1.5px 1.5px at 20px 30px, #fff, transparent),
-                radial-gradient(2px 2px at 40px 70px, #fff, transparent),
-                radial-gradient(1px 1px at 90px 10px, rgba(255,255,255,0.5), transparent);
-            background-size: 400px 400px, 300px 300px, 200px 200px;
-            animation: spaceAmbient 180s linear infinite;
-        }
-        
-        @keyframes spaceAmbient {
-            0% { background-position: 0 0, 0 0, 0 0; }
-            100% { background-position: 400px 800px, -300px 600px, 200px 400px; }
         }
 
+        /* TIEFEN-GRADIENT IM HINTERGRUND */
         .space-gradient { 
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
             background: 
-                radial-gradient(circle at 10% 20%, rgba(79, 172, 254, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(255, 107, 53, 0.06) 0%, transparent 45%),
-                radial-gradient(circle at 50% 50%, #060913 0%, #020408 100%);
+                radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.06) 0%, transparent 35%),
+                radial-gradient(circle at 85% 85%, rgba(255, 107, 53, 0.05) 0%, transparent 40%),
+                #04060f;
             z-index: 0; pointer-events: none; 
         }
+
+        /* SCHICHT 1: STERNE IM HINTERGRUND */
+        .bg-stars {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none;
+            background-image: 
+                radial-gradient(1px 1px at 25px 40px, #fff, transparent),
+                radial-gradient(1.5px 1.5px at 75px 120px, rgba(255,255,255,0.7), transparent);
+            background-size: 300px 300px;
+            animation: starsSlowFly 140s linear infinite;
+        }
+        @keyframes starsSlowFly {
+            from { background-position: 0 0; }
+            to { background-position: 300px 600px; }
+        }
         
-        .wrapper { position: relative; z-index: 2; max-width: 1150px; margin: 0 auto; padding: 60px 24px; }
+        /* HOUPT-CONTENT-CONTAINER (Z-INDEX 5) */
+        .wrapper { position: relative; z-index: 5; max-width: 1150px; margin: 0 auto; padding: 60px 24px; }
         
-        /* DESIGNER SCREEN TRANSITIONS */
+        /* SCHICHT 2: STERNE IM VORDERGRUND (Fliegen VOR den Karten!) */
+        .fg-stars-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10; pointer-events: none;
+        }
+        .foreground-star {
+            position: absolute; background: white; border-radius: 50%;
+            box-shadow: 0 0 8px rgba(255,255,255,0.8);
+            animation: fgStarMove linear infinite;
+        }
+        @keyframes fgStarMove {
+            0% { transform: translateY(-10vh) translateX(0) scale(0.5); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(110vh) translateX(50px) scale(1.2); opacity: 0; }
+        }
+
+        /* ORGANISCHE REVEAL-ANIMATION */
         .screen { 
-            animation: premiumReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: organicReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
         .hidden { display: none !important; }
         
-        @keyframes premiumReveal {
-            from { opacity: 0; transform: translateY(30px) scale(0.97); filter: blur(15px); }
+        @keyframes organicReveal {
+            from { opacity: 0; transform: translateY(40px) scale(0.96); filter: blur(20px); }
             to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
-        /* LOGO & BRANDING BUILD */
+        /* DER ROTIERENDE RAJ-PLANET MIT ECHTEN KONTINENTEN */
         header { text-align: center; margin-bottom: 50px; }
-        .logo-container { display: inline-block; position: relative; margin-bottom: 20px; width: 120px; height: 120px; }
-        .logo-ring { position: absolute; top: 0; left: 0; width: 120px; height: 120px; border: 2px solid rgba(255,255,255,0.05); border-top: 2px solid var(--accent-orange); border-bottom: 2px solid var(--neon-blue); border-radius: 50%; animation: rotateRing 8s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite; }
-        .earth-sphere { position: absolute; top: 12px; left: 12px; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #1e3a8a, #0f172a); box-shadow: inset -8px -8px 20px rgba(0,0,0,0.8), 0 0 25px rgba(79, 172, 254, 0.3); overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .logo-text { font-family: 'Impact', 'Arial Black', sans-serif; font-size: 26px; font-weight: 900; letter-spacing: 2px; background: linear-gradient(135deg, #fff 30%, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-container { display: inline-block; position: relative; margin-bottom: 20px; width: 130px; height: 130px; }
         
-        h1 { font-size: 3.8rem; font-weight: 800; letter-spacing: 8px; background: linear-gradient(135deg, #fff 0%, #cbd5e1 40%, var(--accent-orange) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
+        .logo-ring { 
+            position: absolute; top: 0; left: 0; width: 130px; height: 130px; 
+            border: 1px solid rgba(255,255,255,0.03); border-top: 2px solid var(--accent-orange); border-bottom: 2px solid var(--neon-blue); 
+            border-radius: 50%; animation: rotateRing 12s linear infinite; 
+        }
         
-        /* PREMIUM CARDS (GLASSMORPHISM) */
+        .earth-sphere { 
+            position: absolute; top: 15px; left: 15px; width: 100px; height: 100px; 
+            border-radius: 50%; background: #0f172a; 
+            box-shadow: inset -15px -15px 30px rgba(0,0,0,0.9), 0 0 30px rgba(0, 242, 254, 0.25); 
+            overflow: hidden; position: relative;
+        }
+        
+        /* CSS-Menschlich gezeichnete Kontinente, die um die Kugel rotieren */
+        .continents {
+            position: absolute; top: 0; left: 0; width: 200%; height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 40%, #10b981 15%, transparent 40%),
+                radial-gradient(ellipse at 45% 60%, #059669 20%, transparent 45%),
+                radial-gradient(ellipse at 75% 30%, #10b981 12%, transparent 35%),
+                radial-gradient(ellipse at 90% 70%, #047857 18%, transparent 40%);
+            opacity: 0.75;
+            animation: spinPlanetenKontinente 14s linear infinite;
+        }
+        
+        @keyframes spinPlanetenKontinente {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        .logo-text { position: absolute; width: 100%; text-align: center; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Impact', 'Arial Black', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: 3px; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.9); z-index: 3; }
+        
+        h1 { font-size: 4rem; font-weight: 800; letter-spacing: 10px; background: linear-gradient(135deg, #fff 0%, #94a3b8 50%, var(--accent-orange) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
+        
+        /* THE GLASS CARDS */
         .card { 
             background: var(--card-bg); 
             border: 1px solid var(--card-border); 
-            border-radius: 24px; 
+            border-radius: 28px; 
             padding: 45px; 
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1); 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            transition: border-color 0.5s, box-shadow 0.5s;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.08); 
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
         }
         
-        .main-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 35px; }
+        .main-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; }
         @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
-
-        .info-section h2 { font-size: 1.6rem; font-weight: 600; margin-bottom: 20px; color: #fff; letter-spacing: 0.5px; }
-        .info-section p { color: var(--text-muted); line-height: 1.75; font-size: 1.05rem; margin-bottom: 25px; }
         
-        /* LUXURY BUTTONS WITH SHIMMER EFFECT */
+        /* PREMIUM INTERACTION BUTTONS */
         .btn-play { 
             position: relative; overflow: hidden; display: block; width: 100%; text-align: center; 
             background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-orange) 100%); 
-            color: #030508; font-size: 1.15rem; font-weight: 700; border-radius: 16px; padding: 20px; 
-            text-transform: uppercase; letter-spacing: 1.5px; cursor: pointer; border: none; 
+            color: #030508; font-size: 1.15rem; font-weight: 700; border-radius: 18px; padding: 22px; 
+            text-transform: uppercase; letter-spacing: 2px; cursor: pointer; border: none; 
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s;
         }
-        .btn-play:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 15px 30px rgba(255, 107, 53, 0.3); }
-        .btn-play::after { content: ''; position: absolute; top: -50%; left: -60%; width: 30%; height: 200%; background: rgba(255,255,255,0.25); transform: rotate(25deg); transition: none; }
-        .btn-play:hover::after { left: 140%; transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .btn-play:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(255, 107, 53, 0.35); }
+        .btn-play::after { content: ''; position: absolute; top: -50%; left: -60%; width: 30%; height: 200%; background: rgba(255,255,255,0.3); transform: rotate(25deg); transition: none; }
+        .btn-play:hover::after { left: 140%; transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
         
-        /* CATEGORY CARDS */
+        /* INPUT & SUBMIT FIELD */
+        input[type="text"] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); padding: 18px; color: #fff; font-size: 1.1rem; border-radius: 14px; transition: all 0.3s; }
+        input[type="text"]:focus { border-color: var(--neon-blue); outline: none; box-shadow: 0 0 20px rgba(0, 242, 254, 0.15); }
+        .btn-submit { width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 14px; font-weight: 600; cursor: pointer; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s; }
+        .btn-submit:hover { background: #fff; color: #000; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(255,255,255,0.15); }
+
+        /* CATEGORIES */
         .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; margin: 40px 0; }
-        .category-card { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 20px; padding: 35px 25px; text-align: center; cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .category-card:hover { transform: translateY(-6px); border-color: var(--neon-purple); background: rgba(79, 172, 254, 0.05); box-shadow: 0 15px 35px rgba(79, 172, 254, 0.1); }
-        .category-icon { font-size: 2.6rem; margin-bottom: 15px; display: block; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3)); }
+        .category-card { background: rgba(255, 255, 255, 0.01); border: 1px solid var(--card-border); border-radius: 22px; padding: 40px 25px; text-align: center; cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .category-card:hover { transform: translateY(-8px); border-color: var(--neon-purple); background: rgba(79, 172, 254, 0.04); box-shadow: 0 20px 40px rgba(79, 172, 254, 0.12); }
+        .category-icon { font-size: 2.8rem; margin-bottom: 15px; display: block; }
         
-        /* LOBBY DESIGN */
-        .kahoot-lobby { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 35px; align-items: start; }
+        /* LOBBY & PLAYER GRID */
+        .kahoot-lobby { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 40px; align-items: start; }
         @media (max-width: 800px) { .kahoot-lobby { grid-template-columns: 1fr; } }
-        .pin-box { text-align: center; background: rgba(0, 0, 0, 0.3); padding: 40px; border-radius: 20px; border: 1px dashed rgba(255,255,255,0.15); }
-        .game-pin { font-size: 4.5rem; font-weight: 800; color: #fff; letter-spacing: 8px; margin: 20px 0; text-shadow: 0 0 30px rgba(255,255,255,0.2); }
-        
-        /* INPUT FIELD DESIGN */
-        input[type="text"] { width: 100%; background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); padding: 16px; color: #fff; font-size: 1.1rem; border-radius: 12px; transition: all 0.3s; }
-        input[type="text"]:focus { border-color: var(--neon-blue); outline: none; background: rgba(0,0,0,0.4); box-shadow: 0 0 15px rgba(0, 242, 254, 0.15); }
-        .btn-submit { width: 100%; background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 14px; font-weight: 600; cursor: pointer; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s; }
-        .btn-submit:hover { background: #fff; color: #000; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
-        
-        /* PLAYER PILLS */
+        .pin-box { text-align: center; background: rgba(0, 0, 0, 0.25); padding: 45px; border-radius: 22px; border: 1px dashed rgba(255,255,255,0.12); }
+        .game-pin { font-size: 4.8rem; font-weight: 800; color: #fff; letter-spacing: 10px; margin: 20px 0; text-shadow: 0 0 35px rgba(255,255,255,0.15); }
         .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 14px; list-style: none; }
-        .player-pill { background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 16px; border-radius: 14px; text-align: center; font-weight: 600; transition: all 0.5s ease; animation: popIcon 0.4s ease forwards; }
-        .player-pill.eliminated { background: rgba(231, 29, 54, 0.05); border-color: rgba(231, 29, 54, 0.2); color: #f87171; opacity: 0.4; text-decoration: line-through; transform: scale(0.95); }
+        .player-pill { background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 18px; border-radius: 16px; text-align: center; font-weight: 600; }
+        .player-pill.eliminated { background: rgba(231, 29, 54, 0.04); border-color: rgba(231, 29, 54, 0.2); color: #f87171; opacity: 0.35; text-decoration: line-through; transform: scale(0.96); }
         
-        /* QUIZ FIELD & NEON REACTION BUTTONS */
+        /* QUIZ BUTTONS */
         .quiz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; margin-top: 35px; }
         @media (max-width: 600px) { .quiz-container { grid-template-columns: 1fr; } }
         .quiz-opt-btn { 
             background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); color: var(--text-main); 
-            padding: 32px 24px; font-size: 1.2rem; font-weight: 600; border-radius: 20px; cursor: pointer; 
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); text-align: center;
+            padding: 35px 25px; font-size: 1.25rem; font-weight: 600; border-radius: 22px; cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); text-align: center;
         }
-        .quiz-opt-btn:hover:not(:disabled) { border-color: #fff; background: rgba(255, 255, 255, 0.05); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .quiz-opt-btn:hover:not(:disabled) { border-color: #fff; background: rgba(255, 255, 255, 0.04); transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
         .quiz-opt-btn:disabled { cursor: not-allowed; }
         
-        /* CINEMATIC OVERLAY SYSTEM */
+        /* OVERLAY WINDOW (THE KINO GLASS BLUR) */
         .result-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            background: rgba(4, 6, 14, 0.85);
-            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            background: rgba(3, 4, 10, 0.88);
+            opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
         }
         .result-overlay.active { opacity: 1; pointer-events: auto; }
         
         .result-box { 
-            max-width: 500px; width: 90%; padding: 50px 40px; border-radius: 32px; 
-            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.08);
-            transform: scale(0.85); filter: blur(10px); transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8); text-align: center;
+            max-width: 500px; width: 88%; padding: 55px 40px; border-radius: 36px; 
+            background: rgba(13, 20, 38, 0.7); border: 1px solid rgba(255,255,255,0.07);
+            transform: scale(0.82); filter: blur(15px); transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s;
+            box-shadow: 0 50px 120px rgba(0,0,0,0.8); text-align: center;
         }
         .result-overlay.active .result-box { transform: scale(1); filter: blur(0); }
         
-        /* Status-spezifische Leuchteffekte */
-        .result-overlay.success-state .result-box { box-shadow: 0 0 60px var(--success-glow), inset 0 0 20px var(--success-glow); border-color: rgba(46, 196, 182, 0.3); }
-        .result-overlay.danger-state .result-box { box-shadow: 0 0 60px var(--danger-glow), inset 0 0 20px var(--danger-glow); border-color: rgba(231, 29, 54, 0.3); animation: screenShake 0.4s ease-in-out; }
+        .result-overlay.success-state .result-box { box-shadow: 0 0 70px rgba(46, 196, 182, 0.15); border-color: rgba(46, 196, 182, 0.25); }
+        .result-overlay.danger-state .result-box { box-shadow: 0 0 70px rgba(231, 29, 54, 0.15); border-color: rgba(231, 29, 54, 0.25); animation: structuralShake 0.45s ease-in-out; }
         
-        .result-icon { font-size: 5.5rem; margin-bottom: 25px; display: block; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3)); }
-        .result-title { font-size: 2.6rem; font-weight: 800; margin-bottom: 15px; letter-spacing: 3px; text-transform: uppercase; }
+        .result-icon { font-size: 5.5rem; margin-bottom: 25px; display: block; }
+        .result-title { font-size: 2.8rem; font-weight: 800; margin-bottom: 15px; letter-spacing: 2px; }
         .result-desc { font-size: 1.15rem; color: var(--text-muted); line-height: 1.7; }
 
-        /* DESIGNER ANIMATIONS */
         @keyframes rotateRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes popIcon { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes screenShake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+        @keyframes structuralShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
     </style>
 </head>
 <body>
 
     <div class="space-gradient"></div>
+    <div class="bg-stars"></div>
 
+    <!-- SCHICHT 2: VORDERGRUND STERNE EVENT LAYER -->
+    <div id="foreground-stars" class="fg-stars-container"></div>
+
+    <!-- OVERLAY WINDOW -->
     <div id="result-overlay" class="result-overlay">
         <div class="result-box">
             <span id="res-icon" class="result-icon">✨</span>
-            <h2 id="res-title" class="result-title">Status</h2>
+            <h2 id="res-title" class="result-title">-</h2>
             <p id="res-desc" class="result-desc">-</p>
         </div>
     </div>
 
     <div class="wrapper">
 
+        <!-- SCREEN 1: STARTSEITE -->
         <div class="screen" id="start-screen">
             <header>
-                <div class="logo-container"><div class="logo-ring"></div><div class="earth-sphere"><div class="logo-text">R·A·J</div></div></div>
+                <!-- PLANET JETZT MIT ANIMIERTEN LANDMASSEN -->
+                <div class="logo-container">
+                    <div class="logo-ring"></div>
+                    <div class="earth-sphere">
+                        <div class="continents"></div>
+                    </div>
+                    <div class="logo-text">R·A·J</div>
+                </div>
                 <br>
                 <h1>R.A.J</h1>
-                <p style="color: var(--text-muted); letter-spacing: 3px; margin-top: 8px; font-size: 0.95rem; text-transform: uppercase;">The Ultimate Elimination Quiz</p>
+                <p style="color: var(--text-muted); letter-spacing: 4px; margin-top: 8px; font-size: 0.9rem; text-transform: uppercase;">The Ultimate Elimination Quiz</p>
             </header>
 
             <div class="main-grid">
                 <div class="card info-section">
                     <h2>Spielleiter (Großer Bildschirm)</h2>
-                    <p style="margin-top: 10px;">Eröffne ein neues Match auf diesem Display. Deine Freunde scannen das Spielfeld und treten via Smartphone bei, um live gegeneinander anzutreten.</p>
+                    <p style="margin-top: 10px;">Eröffne ein neues Match auf diesem Display. Deine Mitspieler können die PIN einscannen und treten per Smartphone live an.</p>
                     <button class="btn-play" onclick="geheZuSpielemenue()">Als Host starten →</button>
                 </div>
 
-                <div class="card join-box" style="padding: 40px 35px;">
+                <div class="card join-box">
                     <h2 style="font-size: 1.4rem; margin-bottom: 5px;">Mitspieler Login</h2>
-                    <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem;">Join der aktiven Server-Sitzung</p>
+                    <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem;">Tritt der Server-Sitzung bei</p>
                     <div style="margin-bottom: 20px; text-align: left;">
                         <label style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">4-stellige Spiel-PIN</label>
                         <input type="text" id="join-pin" placeholder="0000" style="text-align: center; letter-spacing: 6px; font-weight: 700; font-size: 1.3rem;">
@@ -214,6 +265,7 @@
             </div>
         </div>
 
+        <!-- SCREEN 2: KATEGORIEN-AUSWAHL -->
         <div class="screen hidden" id="menu-screen">
             <div style="text-align: center; margin-bottom: 40px;">
                 <h2 style="font-size: 2.2rem; font-weight: 700;">Kategorie wählen</h2>
@@ -227,10 +279,11 @@
             </div>
         </div>
 
+        <!-- SCREEN 3: LOBBY -->
         <div class="screen hidden" id="lobby-screen">
             <div style="text-align: center; margin-bottom: 40px;">
                 <h2 style="font-size: 2rem;">Warten auf Crew-Mitglieder</h2>
-                <p style="color: var(--text-muted); margin-top: 5px;">Kategorie geladen: <span id="chosen-category" style="color: var(--accent-orange); font-weight: 600;">-</span></p>
+                <p style="color: var(--text-muted); margin-top: 5px;">Kategorie: <span id="chosen-category" style="color: var(--accent-orange); font-weight: 600;">-</span></p>
             </div>
             <div class="kahoot-lobby">
                 <div class="card pin-box">
@@ -246,17 +299,19 @@
             </div>
         </div>
 
+        <!-- SCREEN 4: MITSPIELER WARTE-SCREEN -->
         <div class="screen hidden" id="player-wait-screen" style="text-align: center; max-width: 480px; margin: 40px auto;">
             <div class="card">
                 <span style="font-size: 3.5rem; display: block; margin-bottom: 15px;">🛸</span>
                 <h2 style="color: var(--neon-blue); font-weight: 600; margin-bottom: 10px;">Bereit zum Abflug!</h2>
-                <p style="color: var(--text-muted); line-height: 1.6;">Du bist erfolgreich eingeloggt. Bitte schaue auf das Hauptdisplay – das Spiel startet in Kürze.</p>
-                <div style="margin-top: 30px; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 12px; font-size: 0.95rem; color: var(--text-main);">
+                <p style="color: var(--text-muted); line-height: 1.6;">Du bist eingeloggt. Bitte schaue auf das Hauptdisplay – das Spiel startet gleich.</p>
+                <div style="margin-top: 30px; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 12px; font-size: 0.95rem;">
                     Kategorie: <span id="player-screen-cat" style="font-weight: 600; color: var(--accent-yellow);">-</span>
                 </div>
             </div>
         </div>
 
+        <!-- SCREEN 5: LIVE QUIZ SPIELFELD -->
         <div class="screen hidden" id="quiz-screen" style="max-width: 850px; margin: 0 auto; text-align: center;">
             <div class="card" style="padding: 50px 40px;">
                 <h2 id="quiz-info" style="font-size: 1.3rem; font-weight: 500; margin-bottom: 15px; letter-spacing: 0.5px;">Wer führt den Zug aus?</h2>
@@ -265,6 +320,7 @@
             </div>
         </div>
 
+        <!-- SCREEN 6: GAME OVER SCREEN -->
         <div class="screen hidden" id="game-over-screen" style="text-align: center; max-width: 550px; margin: 50px auto;">
             <div class="card" style="padding: 50px 40px;">
                 <span style="font-size: 4.5rem; display: block; margin-bottom: 15px;">👑</span>
@@ -283,6 +339,32 @@
         let ichBinHost = false;
         let meineRaumPin = null;
 
+        // --- HANDGEMACHTES SMART VORDERGRUND STERNE-GENERATOR SYSTEM ---
+        function erzeugeVordergrundSterne() {
+            const container = document.getElementById('foreground-stars');
+            container.innerHTML = "";
+            const anzahlSterne = 15; // Dezent, damit es nicht ablenkt
+            
+            for(let i=0; i<anzahlSterne; i++) {
+                const star = document.createElement('div');
+                star.className = "foreground-star";
+                
+                // Zufällige organische Streuung
+                star.style.left = Math.random() * 100 + "vw";
+                star.style.width = (Math.random() * 2 + 1.5) + "px";
+                star.style.height = star.style.width;
+                
+                // Versetzte Start- und Flugzeiten für natürliche Verteilung
+                star.style.animationDuration = (Math.random() * 8 + 6) + "s";
+                star.style.animationDelay = (Math.random() * -12) + "s";
+                
+                container.appendChild(star);
+            }
+        }
+        // Direkt beim Starten ausführen
+        erzeugeVordergrundSterne();
+
+        // --- SOCKET LOGIK CONTROLLER ---
         socket.on('lobbyCreated', ({ pin, kategorie }) => {
             meineRaumPin = pin;
             document.getElementById('generated-pin').innerText = pin;
@@ -314,7 +396,6 @@
 
         socket.on('newTurn', ({ activePlayerName, activePlayerId, question, options }) => {
             document.getElementById('result-overlay').classList.remove('active');
-
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('lobby-screen').classList.add('hidden');
             document.getElementById('player-wait-screen').classList.add('hidden');
@@ -330,7 +411,6 @@
             }
 
             document.getElementById('quiz-question').innerText = question;
-
             const btnContainer = document.getElementById('quiz-options-container');
             btnContainer.innerHTML = ""; 
 
@@ -347,7 +427,7 @@
                     };
                 } else {
                     btn.disabled = true;
-                    btn.style.opacity = "0.25";
+                    btn.style.opacity = "0.2";
                 }
                 btnContainer.appendChild(btn);
             });
@@ -372,7 +452,6 @@
                 title.innerText = "Eliminiert!";
                 title.style.color = "#e71d36";
             }
-
             desc.innerText = msg;
         });
 
@@ -383,35 +462,21 @@
             document.getElementById('winner-name').innerText = `Sieger des Universums: ${winner} 🎉`;
         });
 
-        socket.on('errorMsg', (msg) => {
-            alert(msg);
-        });
+        socket.on('errorMsg', (msg) => { alert(msg); });
 
         function geheZuSpielemenue() {
             ichBinHost = true;
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('menu-screen').classList.remove('hidden');
         }
-
-        function selectCategory(kategorieName) {
-            socket.emit('createLobby', kategorieName);
-        }
-
+        function selectCategory(kategorieName) { socket.emit('createLobby', kategorieName); }
         function spielBeitreten() {
             const pinInput = document.getElementById('join-pin').value.trim();
             const nameInput = document.getElementById('join-name').value.trim();
-            if (!pinInput || !nameInput) {
-                alert("Bitte gib eine PIN und einen Namen ein!");
-                return;
-            }
+            if (!pinInput || !nameInput) { alert("PIN und Name fehlen!"); return; }
             socket.emit('joinLobby', { pin: pinInput, name: nameInput });
         }
-
-        function hostStartetSpiel() {
-            if (meineRaumPin) {
-                socket.emit('startGameServer', meineRaumPin);
-            }
-        }
+        function hostStartetSpiel() { if (meineRaumPin) { socket.emit('startGameServer', meineRaumPin); } }
     </script>
 </body>
 </html>
