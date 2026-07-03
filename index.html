@@ -108,14 +108,22 @@
         @keyframes organicReveal { from { opacity: 0; transform: translateY(40px) scale(0.96); filter: blur(20px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
 
         /* ERDE MIT REALISTISCHEN GEOGRAPHISCHEN REPRODUKTIONEN VIA CSS */
-        header { text-align: center; margin-bottom: 50px; }
-        .logo-container { 
-            display: inline-block; 
-            position: relative; 
-            margin-bottom: 20px; 
-            width: 140px; 
-            height: 140px; 
+        /* Fix für zentriertes Logo auf allen Geräten */
+        header {
+         display: flex;
+         flex-direction: column;
+         align-items: center; /* Zentriert horizontal */
+          justify-content: center;
+          width: 100%;
         }
+
+.logo-container {
+    display: block; /* Ändere von inline-block zu block */
+    margin: 0 auto 20px auto; /* Zentriert */
+    position: relative;
+    width: 140px; 
+    height: 140px;
+}
         .logo-ring { position: absolute; top: 0; left: 0; width: 140px; height: 140px; border: 1px solid rgba(255,255,255,0.03); border-top: 2px solid var(--accent-orange); border-bottom: 2px solid var(--neon-blue); border-radius: 50%; animation: rotateRing 12s linear infinite; }
         .earth-sphere { position: absolute; top: 15px; left: 15px; width: 110px; height: 110px; border-radius: 50%; background: #0b1426; box-shadow: inset -18px -18px 30px rgba(0,0,0,0.95), 0 0 35px rgba(0, 242, 254, 0.3); overflow: hidden; position: relative; }
         /* NEU: BLUR-ZONEN-MASKIERUNG FÜR DEN MITTLEREN PLANETEN */
@@ -632,17 +640,20 @@
         }
         function hostStartetSpiel() { if (meineRaumPin) { socket.emit('startGameServer', meineRaumPin); } }
         // --- NAVIGATIONS-SYSTEM & PLAYER COUNT ---
+// --- ZENTRALE LOGIK ---
 let currentScreen = "start-screen";
 
 function showScreen(screenId) {
-    // 1. Alle Screens verstecken
+    // Alle Screens verstecken
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
     
-    // 2. Ziel-Screen zeigen
-    document.getElementById(screenId).classList.remove('hidden');
+    // Ziel-Screen anzeigen
+    const target = document.getElementById(screenId);
+    if(target) target.classList.remove('hidden');
+    
     currentScreen = screenId;
 
-    // 3. Zurück-Button Logik: Auf Startseite verstecken
+    // Zurück-Button Logik: Auf Startseite verstecken
     const backBtn = document.getElementById('btn-back');
     if (screenId === 'start-screen') {
         backBtn.classList.add('hidden');
@@ -651,17 +662,50 @@ function showScreen(screenId) {
     }
 }
 
-function navigateBack() {
-    // Hier definierst du, von wo nach wo der Zurück-Button führt
-    if (currentScreen === 'menu-screen') showScreen('start-screen');
-    if (currentScreen === 'lobby-screen') showScreen('menu-screen');
-    if (currentScreen === 'quiz-screen') showScreen('lobby-screen'); // falls nötig
+// --- SOCKET EVENTS ---
+socket.on('playerJoined', ({ kategorie }) => {
+    document.getElementById('player-screen-cat').innerText = kategorie;
+    showScreen('player-wait-screen'); // NEU: Nutze die Funktion
+});
+
+socket.on('newTurn', ({ activePlayerId, activePlayerName, question, options }) => {
+    // Ergebnis-Overlay schließen
+    document.getElementById('result-overlay').classList.remove('active');
+    
+    // Nutze showScreen statt manuell Klassen zu ändern
+    showScreen('quiz-screen');
+
+    const infoTag = document.getElementById('quiz-info');
+    // ... restlicher Logik-Code für infoTag ...
+    
+    // UI-Aufbau (dein bestehender Code)
+    // ...
+});
+
+socket.on('gameOver', ({ winner }) => {
+    showScreen('game-over-screen'); // NEU: Nutze showScreen
+    document.getElementById('winner-name').innerText = `Sieger: ${winner}`;
+});
+
+// --- BUTTON FUNKTIONEN ---
+function geheZuSpielemenue() {
+    ichBinHost = true;
+    showScreen('menu-screen'); // NEU: Nutze showScreen
 }
 
-// Socket: Live-Zähler empfangen (Das kommt zu deinen anderen socket.on(...) Funktionen)
+function navigateBack() {
+    // Hier kannst du die Hierarchie definieren
+    if (currentScreen === 'menu-screen') showScreen('start-screen');
+    if (currentScreen === 'lobby-screen') showScreen('menu-screen');
+    if (currentScreen === 'quiz-screen') showScreen('lobby-screen');
+}
+
+// --- PLAYER COUNT ---
 socket.on('playerCountUpdate', (count) => {
-    document.getElementById('player-count').innerText = count;
+    const el = document.getElementById('player-count');
+    if (el) el.innerText = count;
 });
+
     </script>
 </body>
 </html>
