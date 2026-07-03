@@ -602,28 +602,34 @@
         const overlay = document.getElementById('result-overlay');
         // ...
         });
-
-        socket.on('turnResult', ({ player, success, msg }) => {
-            const overlay = document.getElementById('result-overlay');
-            const icon = document.getElementById('res-icon');
-            const title = document.getElementById('res-title');
-            const desc = document.getElementById('res-desc');
-
-            overlay.className = "result-overlay"; 
-
-            if (success) {
-                overlay.classList.add('success-state', 'active');
-                icon.innerText = "🪐";
-                title.innerText = "Korrekt!";
-                title.style.color = "#2ec4b6";
-            } else {
-                overlay.classList.add('danger-state', 'active');
-                icon.innerText = "💥";
-                title.innerText = "Eliminiert!";
-                title.style.color = "#e71d36";
-            }
-            desc.innerText = msg;
-        });
+// --- EINZIGE KORREKTE DEFINITION ---
+    socket.on('turnResult', ({ player, success, msg }) => {
+    
+    // 1. Dein Debug-Schutz (jetzt hier drin, wo er hingehört!)
+    if (success === undefined) return;
+ 
+    // 2. Dein UI-Code
+    const overlay = document.getElementById('result-overlay');
+    const icon = document.getElementById('res-icon');
+    const title = document.getElementById('res-title');
+    const desc = document.getElementById('res-desc');
+ 
+    overlay.className = "result-overlay"; // Reset der Klassen
+ 
+    if (success) {
+        overlay.classList.add('success-state', 'active');
+        icon.innerText = "🪐";
+        title.innerText = "Korrekt!";
+        title.style.color = "#2ec4b6";
+    } else {
+        overlay.classList.add('danger-state', 'active');
+        icon.innerText = "💥";
+        title.innerText = "Eliminiert!";
+        title.style.color = "#e71d36";
+    }
+    desc.innerText = msg;
+    });
+ 
 
         socket.on('gameOver', ({ winner }) => {
             document.getElementById('result-overlay').classList.remove('active');
