@@ -513,7 +513,7 @@
         erzeugeVordergrundSterne();
 
         // --- SERVER EVENTS ---
-        socket.on('lobbyCreated', ({ pin, kategorie }) => {
+        ('lobbyCreated', ({ pin, kategorie }) => {
             meineRaumPin = pin;
             document.getElementById('generated-pin').innerText = pin;
             document.getElementById('chosen-category').innerText = kategorie;
