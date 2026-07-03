@@ -258,23 +258,23 @@
         @keyframes rotateRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes structuralShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
         /* --- MOBILES OPTIMIERUNG --- */
-@media (max-width: 600px) {
-    .wrapper { padding: 20px 10px !important; }
-    h1 { font-size: 2.2rem !important; letter-spacing: 4px !important; }
-    .card { padding: 25px 20px !important; border-radius: 20px !important; }
+        @media (max-width: 600px) {
+        .wrapper { padding: 20px 10px !important; }
+        h1 { font-size: 2.2rem !important; letter-spacing: 4px !important; }
+        .card { padding: 25px 20px !important; border-radius: 20px !important; }
     
-    /* Logo kleiner auf dem Handy */
-    .logo-container { width: 100px !important; height: 100px !important; }
-    .earth-sphere { width: 80px !important; height: 80px !important; top: 10px !important; left: 10px !important; }
-    .earth-mask { width: 80px !important; height: 80px !important; top: 10px !important; left: 10px !important; }
+        /* Logo kleiner auf dem Handy */
+        .logo-container { width: 100px !important; height: 100px !important; }
+        .earth-sphere { width: 80px !important; height: 80px !important; top: 10px !important; left: 10px !important; }
+        .earth-mask { width: 80px !important; height: 80px !important; top: 10px !important; left: 10px !important; }
     
-    /* Layout: Alles untereinander */
-    .main-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
-    .quiz-container { grid-template-columns: 1fr !important; }
+        /* Layout: Alles untereinander */
+        .main-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        .quiz-container { grid-template-columns: 1fr !important; }
     
-    /* Buttons größer für die Bedienung mit dem Daumen */
-    .quiz-opt-btn { padding: 25px 15px !important; font-size: 1rem !important; }
-}
+         /* Buttons größer für die Bedienung mit dem Daumen */
+        .quiz-opt-btn { padding: 25px 15px !important; font-size: 1rem !important; }
+    }
         
     </style>
 </head>
@@ -285,11 +285,7 @@
     .live-badge { position: fixed; top: 20px; right: 20px; z-index: 1000; background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.2); padding: 8px 15px; border-radius: 20px; color: var(--neon-blue); font-size: 0.85rem; }
 </style>
 
-<div class="nav-controls">
-    <button id="btn-back" class="btn-back hidden" onclick="navigateBack()">← Zurück</button>
-</div>
-<div class="live-badge">📡 <span id="player-count">0</span> Spieler online</div>
-    <!-- Überall sichtbare Steuerung -->
+
 <div class="nav-controls">
     <button id="btn-back" class="btn-back hidden" onclick="navigateBack()">← Zurück</button>
 </div>
