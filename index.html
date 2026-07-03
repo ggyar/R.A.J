@@ -512,7 +512,7 @@
         erzeugeVordergrundSterne();
 
         // --- SERVER EVENTS ---
-        ('lobbyCreated', ({ pin, kategorie }) => {
+        socket.on('lobbyCreated', ({ pin, kategorie }) => {
             meineRaumPin = pin;
             document.getElementById('generated-pin').innerText = pin;
             document.getElementById('chosen-category').innerText = kategorie;
@@ -549,10 +549,12 @@
             }
         });
 
-        socket.on('joinedSuccessfully', ({ kategorie }) => {
+        socket.on('joinedSuccessfully', ({ kategorie, pin }) => {
+            meineRaumPin = pin;
             document.getElementById('player-screen-cat').innerText = kategorie;
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('player-wait-screen').classList.remove('hidden');
+            document.getElementById('btn-back').classList.remove('hidden');
         });
 
             socket.on('newTurn', ({ activePlayerName, activePlayerId, question, options }) => {
@@ -643,6 +645,7 @@ socket.on('turnResult', ({ success, msg }) => {
             ichBinHost = true;
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('menu-screen').classList.remove('hidden');
+            document.getElementById('btn-back').classList.remove('hidden');
         }
         function selectCategory(kategorieName) { socket.emit('createLobby', kategorieName); }
         function spielBeitreten() {
@@ -652,72 +655,31 @@ socket.on('turnResult', ({ success, msg }) => {
             socket.emit('joinLobby', { pin: pinInput, name: nameInput });
         }
         function hostStartetSpiel() { if (meineRaumPin) { socket.emit('startGameServer', meineRaumPin); } }
-        // --- NAVIGATIONS-SYSTEM & PLAYER COUNT ---
-// --- ZENTRALE LOGIK ---
-let currentScreen = "start-screen";
+        // --- ZURÜCK-NAVIGATION ---
+        function navigateBack() {
+            const istMenu = !document.getElementById('menu-screen').classList.contains('hidden');
+            const istLobby = !document.getElementById('lobby-screen').classList.contains('hidden');
+            const istQuiz = !document.getElementById('quiz-screen').classList.contains('hidden');
 
-function showScreen(screenId) {
-    // Alle Screens verstecken
-    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-    
-    // Ziel-Screen anzeigen
-    const target = document.getElementById(screenId);
-    if(target) target.classList.remove('hidden');
-    
-    currentScreen = screenId;
+            if (!istMenu && !istLobby && !istQuiz) return; // kein definierter Rückweg von hier
 
-    // Zurück-Button Logik: Auf Startseite verstecken
-    const backBtn = document.getElementById('btn-back');
-    if (screenId === 'start-screen') {
-        backBtn.classList.add('hidden');
-    } else {
-        backBtn.classList.remove('hidden');
-    }
-}
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
 
-// --- SOCKET EVENTS ---
-socket.on('playerJoined', ({ kategorie }) => {
-    document.getElementById('player-screen-cat').innerText = kategorie;
-    showScreen('player-wait-screen'); // NEU: Nutze die Funktion
-});
+            if (istQuiz) {
+                document.getElementById('lobby-screen').classList.remove('hidden');
+            } else if (istLobby) {
+                document.getElementById('menu-screen').classList.remove('hidden');
+            } else if (istMenu) {
+                document.getElementById('start-screen').classList.remove('hidden');
+                document.getElementById('btn-back').classList.add('hidden');
+            }
+        }
 
-socket.on('newTurn', ({ activePlayerId, activePlayerName, question, options }) => {
-    // Ergebnis-Overlay schließen
-    document.getElementById('result-overlay').classList.remove('active');
-    
-    // Nutze showScreen statt manuell Klassen zu ändern
-    showScreen('quiz-screen');
-
-    const infoTag = document.getElementById('quiz-info');
-    // ... restlicher Logik-Code für infoTag ...
-    
-    // UI-Aufbau (dein bestehender Code)
-    // ...
-});
-
-socket.on('gameOver', ({ winner }) => {
-    showScreen('game-over-screen'); // NEU: Nutze showScreen
-    document.getElementById('winner-name').innerText = `Sieger: ${winner}`;
-});
-
-// --- BUTTON FUNKTIONEN ---
-function geheZuSpielemenue() {
-    ichBinHost = true;
-    showScreen('menu-screen'); // NEU: Nutze showScreen
-}
-
-function navigateBack() {
-    // Hier kannst du die Hierarchie definieren
-    if (currentScreen === 'menu-screen') showScreen('start-screen');
-    if (currentScreen === 'lobby-screen') showScreen('menu-screen');
-    if (currentScreen === 'quiz-screen') showScreen('lobby-screen');
-}
-
-// --- PLAYER COUNT ---
-socket.on('playerCountUpdate', (count) => {
-    const el = document.getElementById('player-count');
-    if (el) el.innerText = count;
-});
+        // --- SPIELERZAHL ONLINE ---
+        socket.on('playerCountUpdate', (count) => {
+            const el = document.getElementById('player-count');
+            if (el) el.innerText = count;
+        });
 
     </script>
 </body>
