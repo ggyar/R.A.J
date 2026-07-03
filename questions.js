@@ -50,4 +50,4 @@ const questionsPool = {
     ]
 
 };
-modules.exports = { questionsPool};
+module.exports = { questionsPool};
