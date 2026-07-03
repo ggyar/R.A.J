@@ -594,6 +594,14 @@
                 btnContainer.appendChild(btn);
             });
         });
+    socket.on('turnResult', ({ success, msg }) => {
+        // Debug-Schutz: Wenn der Server kein Ergebnis schickt, passiert nichts
+        if (success === undefined) return; 
+    
+        // ... hier erst deinen Overlay-Code ...
+        const overlay = document.getElementById('result-overlay');
+        // ...
+        });
 
         socket.on('turnResult', ({ player, success, msg }) => {
             const overlay = document.getElementById('result-overlay');
