@@ -78,19 +78,23 @@ io.on('connection', (socket) => {
     });
 
     // Antwort prüfen (Security: Client sendet nur Index)
-    socket.on('submitAnswer', ({ pin, answerIndex }) => {
-        const lobby = lobbies[pin];
-        if (!lobby) return;
-
-        const isCorrect = (answerIndex === lobby.currentCorrectIndex);
-        
-        // Ergebnis an Spieler senden
-        socket.emit('turnResult', { 
-            success: isCorrect, 
-            msg: isCorrect ? "Richtig!" : "Falsch!" 
-        });
+    // Antwort prüfen (Security: Client sendet nur Index)
+socket.on('submitAnswer', ({ pin, answerIndex }) => {
+    const lobby = lobbies[pin];
+    if (!lobby) return;
+ 
+    // Ergebnis berechnen
+    const isCorrect = (answerIndex === lobby.currentCorrectIndex);
+ 
+    // WICHTIG: Das Ergebnis an DEN EINEN Spieler senden
+    // socket.emit sorgt dafür, dass NUR dieser Spieler die Nachricht bekommt
+    socket.emit('turnResult', {
+        success: isCorrect,
+        msg: isCorrect ? "Korrekt!" : "Leider falsch!"
     });
-
+    
+    console.log(`Spieler ${socket.id} hat geantwortet. Korrekt: ${isCorrect}`);
+});
     // Disconnect
     socket.on('disconnect', () => {
         io.emit('playerCountUpdate', io.engine.clientsCount);
