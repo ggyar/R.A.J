@@ -571,7 +571,7 @@
 
             const infoTag = document.getElementById('quiz-info');
             if (socket.id === activePlayerId) {
-                infoTag.innerText = "🚨 DU BIST AM ZUG! Triff eine Entscheidung:";
+                infoTag.innerText = "DU BIST AM ZUG!";
                 infoTag.style.color = "var(--accent-orange)";
             } else {
                 infoTag.innerText = `Übertragung läuft • Aktiv: ${activePlayerName}`;
@@ -636,7 +636,7 @@ socket.on('turnResult', ({ success, msg }) => {
             document.getElementById('result-overlay').classList.remove('active');
             document.getElementById('quiz-screen').classList.add('hidden');
             document.getElementById('game-over-screen').classList.remove('hidden');
-            document.getElementById('winner-name').innerText = `Sieger des Universums: ${winner} 🎉`;
+            document.getElementById('winner-name').innerText = `Glückwunsch ${winner} 🎉`;
         });
 
         socket.on('errorMsg', (msg) => { alert(msg); });
