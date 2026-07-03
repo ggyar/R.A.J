@@ -599,28 +599,22 @@
                 btnContainer.appendChild(btn);
             });
         });
-    socket.on('turnResult', ({ success, msg }) => {
-        // Debug-Schutz: Wenn der Server kein Ergebnis schickt, passiert nichts
-        if (success === undefined) return; 
+   // --- EINZIGE KORREKTE DEFINITION (Hier alles andere löschen!) ---
+socket.on('turnResult', ({ success, msg }) => {
     
-        // ... hier erst deinen Overlay-Code ...
-        const overlay = document.getElementById('result-overlay');
-        // ...
-        });
-// --- EINZIGE KORREKTE DEFINITION ---
-    socket.on('turnResult', ({ player, success, msg }) => {
-    
-    // 1. Dein Debug-Schutz (jetzt hier drin, wo er hingehört!)
+    // 1. Debug-Schutz: Wenn nichts gesendet wurde, abbrechen
     if (success === undefined) return;
- 
-    // 2. Dein UI-Code
+
+    // 2. Elemente abrufen
     const overlay = document.getElementById('result-overlay');
     const icon = document.getElementById('res-icon');
     const title = document.getElementById('res-title');
     const desc = document.getElementById('res-desc');
- 
-    overlay.className = "result-overlay"; // Reset der Klassen
- 
+
+    // 3. UI Status zurücksetzen (WICHTIG: Klassen entfernen!)
+    overlay.className = "result-overlay"; 
+
+    // 4. Anzeige steuern
     if (success) {
         overlay.classList.add('success-state', 'active');
         icon.innerText = "🪐";
@@ -632,7 +626,9 @@
         title.innerText = "Eliminiert!";
         title.style.color = "#e71d36";
     }
+    
     desc.innerText = msg;
+});
     });
  
 
