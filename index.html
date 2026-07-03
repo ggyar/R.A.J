@@ -556,8 +556,13 @@
             document.getElementById('player-wait-screen').classList.remove('hidden');
         });
 
-        socket.on('newTurn', ({ activePlayerName, activePlayerId, question, options }) => {
-            document.getElementById('result-overlay').classList.remove('active');
+            socket.on('newTurn', ({ activePlayerName, activePlayerId, question, options }) => {
+            // --- WICHTIG: UI ZWINGEND ZURÜCKSETZEN ---
+            const overlay = document.getElementById('result-overlay');
+            overlay.classList.remove('active', 'success-state', 'danger-state');
+    
+            // Dann erst den Rest ausführen
+            document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('lobby-screen').classList.add('hidden');
             document.getElementById('player-wait-screen').classList.add('hidden');
