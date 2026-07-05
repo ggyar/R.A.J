@@ -18,13 +18,44 @@ const io = new Server(server, { cors: { origin: "*" } });
 const lobbies = {};
 let onlineCount = 0;
 
-function pickRandomQuestion(kategorie) {
-    const pool = questionsPool[kategorie] || questionsPool["Allgemeines"];
-    return pool[Math.floor(Math.random() * pool.length)];
+function pickNextQuestion(lobby) {
+    const pool = questionsPool[lobby.kategorie] || questionsPool["Allgemeines"];
+
+    if (!lobby.usedQuestionIndices) lobby.usedQuestionIndices = new Set();
+    if (lobby.usedQuestionIndices.size >= pool.length) {
+        lobby.usedQuestionIndices.clear(); // alle Fragen der Kategorie waren schon dran -> von vorne
+    }
+
+    let idx;
+    do {
+        idx = Math.floor(Math.random() * pool.length);
+    } while (lobby.usedQuestionIndices.has(idx));
+
+    lobby.usedQuestionIndices.add(idx);
+    return pool[idx];
 }
 
 function getAlivePlayers(lobby) {
     return lobby.players.filter(p => p.alive);
+}
+
+// Wählt den NÄCHSTEN Spieler in der Beitritts-Reihenfolge (nicht zufällig), überspringt Eliminierte.
+// So bekommt garantiert jeder reihum genau eine Frage, bevor der/die Nächste dran ist.
+function getNextAlivePlayer(lobby) {
+    const players = lobby.players;
+    if (players.length === 0) return null;
+
+    let startIndex = 0;
+    if (lobby.activePlayerId) {
+        const lastIndex = players.findIndex(p => p.id === lobby.activePlayerId);
+        if (lastIndex !== -1) startIndex = lastIndex + 1;
+    }
+
+    for (let i = 0; i < players.length; i++) {
+        const idx = (startIndex + i) % players.length;
+        if (players[idx].alive) return players[idx];
+    }
+    return null; // niemand mehr am Leben
 }
 
 function broadcastPlayers(pin) {
@@ -33,7 +64,7 @@ function broadcastPlayers(pin) {
     io.to(pin).emit('updatePlayers', lobby.players.map(p => ({ name: p.name, alive: p.alive })));
 }
 
-// Wählt den nächsten aktiven Spieler + Frage, oder beendet das Spiel wenn nur noch 0-1 übrig sind
+// Wählt den nächsten Spieler (der Reihe nach) + Frage, oder beendet das Spiel wenn nur noch 0-1 übrig sind
 function startNextTurn(pin) {
     const lobby = lobbies[pin];
     if (!lobby) return;
@@ -47,8 +78,10 @@ function startNextTurn(pin) {
         return;
     }
 
-    const nextPlayer = alive[Math.floor(Math.random() * alive.length)];
-    const qObj = pickRandomQuestion(lobby.kategorie);
+    const nextPlayer = getNextAlivePlayer(lobby);
+    if (!nextPlayer) return; // sollte wegen der Prüfung oben nicht vorkommen, sicherheitshalber
+
+    const qObj = pickNextQuestion(lobby);
 
     lobby.currentCorrectIndex = qObj.correct;
     lobby.activePlayerId = nextPlayer.id;
