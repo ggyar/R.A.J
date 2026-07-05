@@ -24,18 +24,6 @@ const questionsPool = {
         { q: "Was ist der größte Regenwald der Welt?", opts: ["Kongo-Becken", "Amazonas", "Indonesien", "Borneo"], correct: 1 },
         { q: "Welches Meer ist das salzhaltigste?", opts: ["Totes Meer", "Schwarzes Meer", "Rotes Meer", "Mittelmeer"], correct: 0 }
     ],
-    "Kontinente": [
-        { q: "Welcher Kontinent ist der bevölkerungsreichste?", opts: ["Afrika", "Europa", "Asien", "Amerika"], correct: 2 },
-        { q: "Auf welchem Kontinent liegt die Sahara?", opts: ["Asien", "Afrika", "Australien", "Amerika"], correct: 1 },
-        { q: "Welcher Kontinent wird auch 'Down Under' genannt?", opts: ["Amerika", "Australien", "Antarktis", "Europa"], correct: 1 },
-        { q: "Wie viele Kontinente gibt es offiziell?", opts: ["5", "6", "7", "8"], correct: 2 },
-        { q: "Welcher Kontinent hat keine permanente Bevölkerung?", opts: ["Australien", "Arktis", "Antarktis", "Grönland"], correct: 2 },
-        { q: "In welchem Kontinent liegt der Amazonas?", opts: ["Südamerika", "Nordamerika", "Afrika", "Asien"], correct: 0 },
-        { q: "Welcher Kontinent ist der kleinste?", opts: ["Europa", "Australien", "Antarktis", "Südamerika"], correct: 1 },
-        { q: "Welcher Kontinent umfasst nur ein einziges Land?", opts: ["Australien", "Antarktis", "Europa", "Afrika"], correct: 0 },
-        { q: "Was verbindet Nord- und Südamerika?", opts: ["Panama-Enge", "Suez-Kanal", "Beringstraße", "Gibraltar"], correct: 0 },
-        { q: "Auf welchem Kontinent liegt Italien?", opts: ["Asien", "Europa", "Afrika", "Amerika"], correct: 1 }
-    ],
     "Länder": [
         { q: "Welches Land hat die meisten Einwohner?", opts: ["Indien", "USA", "China", "Brasilien"], correct: 0 },
         { q: "Was ist die Hauptstadt von Japan?", opts: ["Seoul", "Tokio", "Peking", "Bangkok"], correct: 1 },
@@ -47,7 +35,66 @@ const questionsPool = {
         { q: "In welchem Land liegt Machu Picchu?", opts: ["Chile", "Peru", "Mexiko", "Bolivien"], correct: 1 },
         { q: "Welches Land ist berühmt für seine Fjorde?", opts: ["Schweden", "Finnland", "Norwegen", "Dänemark"], correct: 2 },
         { q: "Was ist die Hauptstadt von Kanada?", opts: ["Toronto", "Vancouver", "Ottawa", "Montreal"], correct: 2 }
+    ],
+    "Musik": [
+        { q: "Wer komponierte die berühmte 9. Sinfonie mit der 'Ode an die Freude'?", opts: ["Mozart", "Beethoven", "Bach", "Brahms"], correct: 1 },
+        { q: "Wie viele Saiten hat eine klassische Gitarre?", opts: ["4", "5", "6", "7"], correct: 2 },
+        { q: "Welches Instrument hat normalerweise 88 Tasten?", opts: ["Orgel", "Klavier", "Akkordeon", "Cembalo"], correct: 1 },
+        { q: "Aus welchem Land kommt die Band ABBA?", opts: ["Norwegen", "Schweden", "Dänemark", "Finnland"], correct: 1 },
+        { q: "Wie nennt man die höchste Frauenstimme in der Klassik?", opts: ["Alt", "Mezzosopran", "Sopran", "Bariton"], correct: 2 },
+        { q: "Welcher Musiker trägt den Spitznamen 'King of Pop'?", opts: ["Elvis Presley", "Prince", "Michael Jackson", "Freddie Mercury"], correct: 2 },
+        { q: "Wie viele Linien hat ein klassisches Notensystem?", opts: ["4", "5", "6", "7"], correct: 1 },
+        { q: "In welchem Land fand das legendäre Woodstock-Festival 1969 statt?", opts: ["Großbritannien", "Deutschland", "USA", "Kanada"], correct: 2 },
+        { q: "Welches Land gilt als Geburtsort der Oper?", opts: ["Frankreich", "Italien", "Deutschland", "Österreich"], correct: 1 },
+        { q: "Wie viele Mitglieder hatten die Beatles?", opts: ["3", "4", "5", "6"], correct: 1 }
+    ],
+    "Kunst": [
+        { q: "Wer malte die Mona Lisa?", opts: ["Michelangelo", "Raffael", "Leonardo da Vinci", "Tizian"], correct: 2 },
+        { q: "In welchem Museum hängt die Mona Lisa?", opts: ["Prado", "Louvre", "Uffizien", "MoMA"], correct: 1 },
+        { q: "Wer malte 'Die Sternennacht'?", opts: ["Claude Monet", "Vincent van Gogh", "Paul Cézanne", "Edgar Degas"], correct: 1 },
+        { q: "Welcher Kunststil wird mit Pablo Picasso assoziiert?", opts: ["Impressionismus", "Kubismus", "Barock", "Realismus"], correct: 1 },
+        { q: "Wer schuf die berühmte Skulptur 'David'?", opts: ["Donatello", "Michelangelo", "Bernini", "Rodin"], correct: 1 },
+        { q: "Wo befindet sich die Sixtinische Kapelle?", opts: ["Italien", "Frankreich", "Vatikanstadt", "Spanien"], correct: 2 },
+        { q: "Welcher Maler ist dafür bekannt, sich ein Stück seines Ohrs abgeschnitten zu haben?", opts: ["Paul Gauguin", "Vincent van Gogh", "Edvard Munch", "Henri Matisse"], correct: 1 },
+        { q: "Welcher Künstler prägte den Abstrakten Expressionismus mit seiner Drip-Painting-Technik?", opts: ["Salvador Dalí", "Jackson Pollock", "Andy Warhol", "Mark Rothko"], correct: 1 },
+        { q: "Wer malte 'Das letzte Abendmahl'?", opts: ["Raffael", "Leonardo da Vinci", "Michelangelo", "Botticelli"], correct: 1 },
+        { q: "Welcher Künstler ist berühmt für seine Bilder von Campbell's-Suppendosen?", opts: ["Roy Lichtenstein", "Andy Warhol", "Keith Haring", "Jean-Michel Basquiat"], correct: 1 }
+    ],
+    "Naturwissenschaften": [
+        { q: "Was ist die chemische Formel für Wasser?", opts: ["CO2", "H2O", "O2", "NaCl"], correct: 1 },
+        { q: "Wie viele Chromosomenpaare hat der Mensch normalerweise?", opts: ["21", "22", "23", "24"], correct: 2 },
+        { q: "Wie schnell ist das Licht ungefähr (in km/s)?", opts: ["150.000", "300.000", "450.000", "1.000.000"], correct: 1 },
+        { q: "Wer entwickelte die Relativitätstheorie?", opts: ["Isaac Newton", "Albert Einstein", "Niels Bohr", "Max Planck"], correct: 1 },
+        { q: "Welches Element kommt im Universum am häufigsten vor?", opts: ["Helium", "Sauerstoff", "Wasserstoff", "Kohlenstoff"], correct: 2 },
+        { q: "Was ist die Grundeinheit der elektrischen Stromstärke?", opts: ["Volt", "Watt", "Ampere", "Ohm"], correct: 2 },
+        { q: "Wie nennt man den Prozess, bei dem Pflanzen Licht in Energie umwandeln?", opts: ["Photosynthese", "Osmose", "Zellatmung", "Fotolyse"], correct: 0 },
+        { q: "Welches Organ pumpt das Blut durch den menschlichen Körper?", opts: ["Leber", "Lunge", "Herz", "Niere"], correct: 2 },
+        { q: "Wie nennt man die kleinste Einheit der Materie, die die Eigenschaften eines Elements behält?", opts: ["Molekül", "Atom", "Zelle", "Ion"], correct: 1 },
+        { q: "Welcher Planet ist der Sonne am nächsten?", opts: ["Venus", "Mars", "Merkur", "Erde"], correct: 2 }
+    ],
+    "Film": [
+        { q: "Wer führte bei 'Titanic' (1997) Regie?", opts: ["Steven Spielberg", "James Cameron", "Ridley Scott", "Christopher Nolan"], correct: 1 },
+        { q: "Welcher Film mit Tom Hanks gewann den Oscar als bester Film für das Jahr 1994?", opts: ["Cast Away", "Forrest Gump", "Philadelphia", "Big"], correct: 1 },
+        { q: "Wer führte bei der ursprünglichen 'Star Wars'-Trilogie Regie?", opts: ["Steven Spielberg", "George Lucas", "James Cameron", "Ridley Scott"], correct: 1 },
+        { q: "Welcher Schauspieler verkörpert Iron Man im Marvel Cinematic Universe?", opts: ["Chris Evans", "Chris Hemsworth", "Robert Downey Jr.", "Mark Ruffalo"], correct: 2 },
+        { q: "In welcher Stadt liegt der berühmte Stadtteil Hollywood?", opts: ["San Francisco", "Los Angeles", "San Diego", "Las Vegas"], correct: 1 },
+        { q: "Welches Studio produzierte den ersten komplett computeranimierten Spielfilm 'Toy Story'?", opts: ["DreamWorks", "Pixar", "Illumination", "Blue Sky Studios"], correct: 1 },
+        { q: "Wer spielte die Hauptrolle als Jack Dawson in 'Titanic'?", opts: ["Brad Pitt", "Matt Damon", "Leonardo DiCaprio", "Tom Cruise"], correct: 2 },
+        { q: "Wie heißt Steven Spielbergs Hai-Thriller von 1975?", opts: ["Deep Blue Sea", "Der weiße Hai", "Open Water", "47 Meters Down"], correct: 1 },
+        { q: "In welcher fiktiven Stadt kämpft Batman gegen das Verbrechen?", opts: ["Metropolis", "Gotham City", "Central City", "Star City"], correct: 1 },
+        { q: "Welches Unternehmen steht hinter Micky Maus?", opts: ["Warner Bros", "Universal", "Disney", "Paramount"], correct: 2 }
+    ],
+    "Sport": [
+        { q: "Wie viele Spieler einer Mannschaft stehen beim Fußball gleichzeitig auf dem Feld (inkl. Torwart)?", opts: ["10", "11", "12", "9"], correct: 1 },
+        { q: "In welcher Sportart tritt man beim Grand-Slam-Turnier in Wimbledon an?", opts: ["Golf", "Tennis", "Cricket", "Squash"], correct: 1 },
+        { q: "In welchem Rhythmus finden die Olympischen Sommerspiele statt?", opts: ["Alle 2 Jahre", "Alle 3 Jahre", "Alle 4 Jahre", "Alle 5 Jahre"], correct: 2 },
+        { q: "Wie viele Ringe zeigt das olympische Symbol?", opts: ["4", "5", "6", "7"], correct: 1 },
+        { q: "Wie lang ist die Strecke eines Marathons ungefähr?", opts: ["30 km", "42 km", "50 km", "21 km"], correct: 1 },
+        { q: "Wie viele Punkte ist ein Touchdown im American Football wert (ohne Extrapunkt)?", opts: ["3", "6", "7", "9"], correct: 1 },
+        { q: "Auf welchem Untergrund wird die French Open (Roland Garros) traditionell gespielt?", opts: ["Rasen", "Hartplatz", "Sandplatz", "Teppich"], correct: 2 },
+        { q: "Wie viele Spieler hat eine Basketball-Mannschaft gleichzeitig auf dem Feld?", opts: ["4", "5", "6", "7"], correct: 1 },
+        { q: "Welche Sportart wird mit einem Schläger und einem Federball gespielt?", opts: ["Squash", "Badminton", "Tischtennis", "Tennis"], correct: 1 },
+        { q: "Wie viele Minuten dauert eine reguläre Fußball-Halbzeit?", opts: ["40", "45", "50", "60"], correct: 1 }
     ]
-
 };
-module.exports = { questionsPool};
+module.exports = { questionsPool };
