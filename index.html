@@ -331,6 +331,10 @@
         .leaderboard-row { padding: 11px 14px !important; gap: 10px !important; }
         .leaderboard-name { font-size: 0.95rem !important; }
         .leaderboard-score { font-size: 1.1rem !important; min-width: 36px !important; }
+
+        /* Musik-Bedienfeld: schmaler Regler auf dem Handy */
+        .music-control { padding: 7px 12px !important; gap: 7px !important; bottom: 14px !important; right: 14px !important; }
+        .music-volume-slider { width: 58px !important; }
     }
         
     </style>
@@ -340,6 +344,9 @@
     .nav-controls { position: fixed; top: 20px; left: 20px; z-index: 1000; }
     .btn-back { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 20px; border-radius: 12px; cursor: pointer; backdrop-filter: blur(5px); }
     .live-badge { position: fixed; top: 20px; right: 20px; z-index: 1000; background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.2); padding: 8px 15px; border-radius: 20px; color: var(--neon-blue); font-size: 0.85rem; }
+    .music-control { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 9px 16px; border-radius: 30px; backdrop-filter: blur(5px); }
+    .music-toggle-btn { background: none; border: none; color: white; font-size: 1.15rem; cursor: pointer; padding: 0; line-height: 1; flex-shrink: 0; }
+    .music-volume-slider { width: 85px; accent-color: var(--neon-blue); cursor: pointer; }
 </style>
 
 
@@ -349,6 +356,11 @@
 <div class="live-badge">
     📡 <span id="player-count">0</span> Spieler online
 </div>
+<div class="music-control">
+    <button id="music-toggle-btn" class="music-toggle-btn" onclick="toggleMusicMute()" title="Musik stumm/laut">🔊</button>
+    <input type="range" id="music-volume-slider" class="music-volume-slider" min="0" max="100" value="40" oninput="setMusicVolume(this.value)" aria-label="Musiklautstärke">
+</div>
+<audio id="bg-music" src="assets/background-music.mp3" loop preload="auto"></audio>
 
     <div class="space-gradient"></div>
     <div class="bg-stars"></div>
@@ -497,6 +509,53 @@
         let ichBinHost = false;
         let meineRaumPin = null;
 
+        // --- HINTERGRUNDMUSIK ---
+        const bgMusic = document.getElementById('bg-music');
+        const musicSlider = document.getElementById('music-volume-slider');
+        const musicBtn = document.getElementById('music-toggle-btn');
+
+        const gespeicherteLautstaerke = localStorage.getItem('raj_music_volume');
+        bgMusic.volume = gespeicherteLautstaerke !== null ? Number(gespeicherteLautstaerke) / 100 : 0.4;
+        bgMusic.muted = localStorage.getItem('raj_music_muted') === 'true';
+        musicSlider.value = Math.round(bgMusic.volume * 100);
+        updateMusicIcon();
+
+        // Spielt die Musik ab (überall außer während einer aktiven Quiz-Frage)
+        function playMusic() {
+            bgMusic.play().catch(() => {
+                // Browser blockiert Autoplay ohne vorherige Nutzer-Interaktion ->
+                // beim ersten Klick/Touch irgendwo auf der Seite nachholen
+                const resumeOnce = () => bgMusic.play().catch(() => {});
+                document.addEventListener('click', resumeOnce, { once: true });
+                document.addEventListener('touchstart', resumeOnce, { once: true });
+            });
+        }
+        function pauseMusic() {
+            bgMusic.pause();
+        }
+        function toggleMusicMute() {
+            bgMusic.muted = !bgMusic.muted;
+            localStorage.setItem('raj_music_muted', bgMusic.muted);
+            updateMusicIcon();
+        }
+        function setMusicVolume(value) {
+            bgMusic.volume = value / 100;
+            localStorage.setItem('raj_music_volume', value);
+            if (Number(value) === 0 && !bgMusic.muted) {
+                bgMusic.muted = true;
+                localStorage.setItem('raj_music_muted', true);
+            } else if (Number(value) > 0 && bgMusic.muted) {
+                bgMusic.muted = false;
+                localStorage.setItem('raj_music_muted', false);
+            }
+            updateMusicIcon();
+        }
+        function updateMusicIcon() {
+            musicBtn.innerText = bgMusic.muted ? '🔇' : '🔊';
+        }
+
+        playMusic(); // Start auf der Startseite
+
         // QR Auto-Fill Erkennung
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -578,6 +637,7 @@
         // --- SERVER EVENTS ---
         socket.on('lobbyCreated', ({ pin, kategorie }) => {
             meineRaumPin = pin;
+            playMusic();
             document.getElementById('generated-pin').innerText = pin;
             document.getElementById('chosen-category').innerText = kategorie;
             document.getElementById('menu-screen').classList.add('hidden');
@@ -615,6 +675,7 @@
 
         socket.on('joinedSuccessfully', ({ kategorie, pin }) => {
             meineRaumPin = pin;
+            playMusic();
             document.getElementById('player-screen-cat').innerText = kategorie;
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('player-wait-screen').classList.remove('hidden');
@@ -625,6 +686,7 @@
             // --- WICHTIG: UI ZWINGEND ZURÜCKSETZEN ---
             const overlay = document.getElementById('result-overlay');
             overlay.classList.remove('active', 'success-state', 'danger-state');
+            pauseMusic(); // Musik pausiert während einer aktiven Frage
     
             // Dann erst den Rest ausführen
             document.getElementById('start-screen').classList.add('hidden');
@@ -702,8 +764,9 @@ socket.on('turnResult', ({ success, msg }) => {
             document.getElementById('quiz-screen').classList.add('hidden');
             document.getElementById('leaderboard-screen').classList.add('hidden');
             document.getElementById('game-over-screen').classList.remove('hidden');
-            document.getElementById('winner-name').innerText = `Gratulation ${winner} 🎉`;
+            document.getElementById('winner-name').innerText = `Sieger des Universums: ${winner} 🎉`;
             if (leaderboard) renderLeaderboard(leaderboard, 'final-leaderboard-list');
+            playMusic();
         });
 
         socket.on('roundEnd', ({ round, leaderboard }) => {
@@ -713,6 +776,7 @@ socket.on('turnResult', ({ success, msg }) => {
             document.getElementById('leaderboard-title').innerText = `🏆 Stand nach Runde ${round}`;
             document.getElementById('leaderboard-subtitle').innerText = 'Nächste Runde startet gleich …';
             renderLeaderboard(leaderboard, 'leaderboard-list');
+            playMusic();
         });
 
         // Baut die Rangliste in den angegebenen Container, mit gestaffelter Eintritts-Animation
@@ -762,6 +826,7 @@ socket.on('turnResult', ({ success, msg }) => {
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('menu-screen').classList.remove('hidden');
             document.getElementById('btn-back').classList.remove('hidden');
+            playMusic();
         }
         function selectCategory(kategorieName) { socket.emit('createLobby', kategorieName); }
         function spielBeitreten() {
@@ -789,6 +854,7 @@ socket.on('turnResult', ({ success, msg }) => {
                 document.getElementById('start-screen').classList.remove('hidden');
                 document.getElementById('btn-back').classList.add('hidden');
             }
+            playMusic();
         }
 
         // --- SPIELERZAHL ONLINE ---
