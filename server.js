@@ -17,6 +17,7 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 const lobbies = {};
 let onlineCount = 0;
+const LEADERBOARD_DISPLAY_MS = 5000; // Wie lange das Leaderboard zwischen den Runden sichtbar bleibt
 
 function pickNextQuestion(lobby) {
     const pool = questionsPool[lobby.kategorie] || questionsPool["Allgemeines"];
@@ -40,7 +41,6 @@ function getAlivePlayers(lobby) {
 }
 
 // Wählt den NÄCHSTEN Spieler in der Beitritts-Reihenfolge (nicht zufällig), überspringt Eliminierte.
-// So bekommt garantiert jeder reihum genau eine Frage, bevor der/die Nächste dran ist.
 function getNextAlivePlayer(lobby) {
     const players = lobby.players;
     if (players.length === 0) return null;
@@ -61,25 +61,32 @@ function getNextAlivePlayer(lobby) {
 function broadcastPlayers(pin) {
     const lobby = lobbies[pin];
     if (!lobby) return;
-    io.to(pin).emit('updatePlayers', lobby.players.map(p => ({ name: p.name, alive: p.alive })));
+    io.to(pin).emit('updatePlayers', lobby.players.map(p => ({ name: p.name, alive: p.alive, score: p.score })));
 }
 
-// Wählt den nächsten Spieler (der Reihe nach) + Frage, oder beendet das Spiel wenn nur noch 0-1 übrig sind
+// Baut die sortierte Rangliste: zuerst lebende Spieler (nach Punkten absteigend), dann Ausgeschiedene
+function buildLeaderboard(lobby) {
+    return [...lobby.players]
+        .sort((a, b) => {
+            if (a.alive !== b.alive) return a.alive ? -1 : 1;
+            return b.score - a.score;
+        })
+        .map(p => ({ name: p.name, score: p.score, alive: p.alive }));
+}
+
+// Startet eine neue Runde: merkt sich, wer diese Runde dabei ist, damit wir wissen, wann sie komplett ist
+function beginNewRound(lobby) {
+    lobby.roundParticipants = getAlivePlayers(lobby).map(p => p.id);
+    lobby.roundTurnsTaken = new Set();
+    lobby.roundNumber = (lobby.roundNumber || 0) + 1;
+}
+
 function startNextTurn(pin) {
     const lobby = lobbies[pin];
     if (!lobby) return;
 
-    const alive = getAlivePlayers(lobby);
-
-    if (alive.length <= 1) {
-        const winnerName = alive.length === 1 ? alive[0].name : "Niemand";
-        io.to(pin).emit('gameOver', { winner: winnerName });
-        delete lobbies[pin];
-        return;
-    }
-
     const nextPlayer = getNextAlivePlayer(lobby);
-    if (!nextPlayer) return; // sollte wegen der Prüfung oben nicht vorkommen, sicherheitshalber
+    if (!nextPlayer) return; // sollte dank advanceGame() nicht vorkommen
 
     const qObj = pickNextQuestion(lobby);
 
@@ -90,8 +97,42 @@ function startNextTurn(pin) {
         activePlayerId: nextPlayer.id,
         activePlayerName: nextPlayer.name,
         question: qObj.q,
-        options: qObj.opts
+        options: qObj.opts,
+        round: lobby.roundNumber
     });
+}
+
+// Nach jeder beantworteten Frage (und bei Disconnects während des Spiels) aufgerufen.
+// Entscheidet: Spiel vorbei -> gameOver; Runde komplett -> Leaderboard + neue Runde; sonst -> nächster Zug.
+function advanceGame(pin) {
+    const lobby = lobbies[pin];
+    if (!lobby) return;
+
+    const alive = getAlivePlayers(lobby);
+
+    if (alive.length <= 1) {
+        const winnerName = alive.length === 1 ? alive[0].name : "Niemand";
+        io.to(pin).emit('gameOver', { winner: winnerName, leaderboard: buildLeaderboard(lobby) });
+        delete lobbies[pin];
+        return;
+    }
+
+    const rundeKomplett = lobby.roundParticipants.length > 0 &&
+        lobby.roundTurnsTaken.size >= lobby.roundParticipants.length;
+
+    if (rundeKomplett) {
+        io.to(pin).emit('roundEnd', {
+            round: lobby.roundNumber,
+            leaderboard: buildLeaderboard(lobby)
+        });
+        setTimeout(() => {
+            if (!lobbies[pin]) return; // Lobby könnte zwischenzeitlich weg sein
+            beginNewRound(lobbies[pin]);
+            startNextTurn(pin);
+        }, LEADERBOARD_DISPLAY_MS);
+    } else {
+        startNextTurn(pin);
+    }
 }
 
 io.on('connection', (socket) => {
@@ -106,13 +147,15 @@ io.on('connection', (socket) => {
             players: [],
             started: false,
             currentCorrectIndex: null,
-            activePlayerId: null
+            activePlayerId: null,
+            roundParticipants: [],
+            roundTurnsTaken: new Set(),
+            roundNumber: 0
         };
         socket.join(pin);
         socket.emit('lobbyCreated', { pin, kategorie });
     });
 
-    // NEU: kompletter Beitritts-Handler (fehlte komplett)
     socket.on('joinLobby', ({ pin, name }) => {
         const lobby = lobbies[pin];
         if (!lobby) {
@@ -125,7 +168,7 @@ io.on('connection', (socket) => {
         }
 
         const cleanName = (name || '').trim().slice(0, 20) || 'Spieler';
-        lobby.players.push({ id: socket.id, name: cleanName, alive: true });
+        lobby.players.push({ id: socket.id, name: cleanName, alive: true, score: 0 });
         socket.join(pin);
 
         socket.emit('joinedSuccessfully', { kategorie: lobby.kategorie, pin });
@@ -143,6 +186,7 @@ io.on('connection', (socket) => {
         }
 
         lobby.started = true;
+        beginNewRound(lobby);
         startNextTurn(pin);
     });
 
@@ -153,7 +197,12 @@ io.on('connection', (socket) => {
 
         const isCorrect = (answerIndex === lobby.currentCorrectIndex);
         const player = lobby.players.find(p => p.id === socket.id);
-        if (!isCorrect && player) player.alive = false;
+        if (player) {
+            if (isCorrect) player.score += 1;
+            else player.alive = false;
+        }
+
+        lobby.roundTurnsTaken.add(socket.id);
 
         socket.emit('turnResult', {
             success: isCorrect,
@@ -162,8 +211,8 @@ io.on('connection', (socket) => {
 
         broadcastPlayers(pin);
 
-        // kurze Pause, damit das Ergebnis-Overlay sichtbar bleibt, dann nächste Runde
-        setTimeout(() => startNextTurn(pin), 2800);
+        // kurze Pause, damit das Ergebnis-Overlay sichtbar bleibt, dann geht's weiter
+        setTimeout(() => advanceGame(pin), 2800);
     });
 
     socket.on('disconnect', () => {
@@ -181,10 +230,13 @@ io.on('connection', (socket) => {
 
             if (lobby.players.some(p => p.id === socket.id)) {
                 lobby.players = lobby.players.filter(p => p.id !== socket.id);
+                if (lobby.roundParticipants) {
+                    lobby.roundParticipants = lobby.roundParticipants.filter(id => id !== socket.id);
+                }
                 broadcastPlayers(pin);
 
                 if (lobby.started && lobby.activePlayerId === socket.id) {
-                    startNextTurn(pin);
+                    advanceGame(pin);
                 }
             }
         }
