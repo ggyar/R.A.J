@@ -227,6 +227,26 @@
         .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 14px; list-style: none; }
         .player-pill { background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 18px; border-radius: 16px; text-align: center; font-weight: 600; }
         .player-pill.eliminated { background: rgba(231, 29, 54, 0.04); border-color: rgba(231, 29, 54, 0.2); color: #f87171; opacity: 0.35; text-decoration: line-through; transform: scale(0.96); }
+
+        /* --- LEADERBOARD --- */
+        @keyframes rowSlideIn { from { opacity: 0; transform: translateX(-24px) scale(0.96); } to { opacity: 1; transform: translateX(0) scale(1); } }
+        @keyframes rowSlideInDimmed { from { opacity: 0; transform: translateX(-24px) scale(0.96); } to { opacity: 0.45; transform: translateX(0) scale(1); } }
+        .leaderboard-row {
+            display: flex; align-items: center; gap: 16px;
+            background: rgba(255,255,255,0.02); border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 14px 20px; margin-bottom: 10px;
+            opacity: 0; animation: rowSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .leaderboard-row:hover { transform: translateX(4px); }
+        .leaderboard-row.eliminated-row { animation-name: rowSlideInDimmed; text-decoration: line-through; }
+        .leaderboard-row.rank-1 { border-color: var(--accent-yellow); background: rgba(255, 183, 3, 0.07); box-shadow: 0 0 30px rgba(255, 183, 3, 0.15); }
+        .leaderboard-row.rank-2 { border-color: rgba(226, 232, 240, 0.35); background: rgba(226, 232, 240, 0.04); }
+        .leaderboard-row.rank-3 { border-color: rgba(205, 127, 50, 0.35); background: rgba(205, 127, 50, 0.05); }
+        .leaderboard-rank { font-size: 1.25rem; font-weight: 800; width: 34px; flex-shrink: 0; color: var(--text-muted); }
+        .leaderboard-row.rank-1 .leaderboard-rank, .leaderboard-row.rank-2 .leaderboard-rank, .leaderboard-row.rank-3 .leaderboard-rank { font-size: 1.5rem; }
+        .leaderboard-name { flex: 1; text-align: left; font-weight: 600; font-size: 1.05rem; }
+        .leaderboard-score { font-size: 1.25rem; font-weight: 800; color: var(--neon-blue); min-width: 44px; text-align: right; }
         
         .quiz-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; margin-top: 35px; }
         @media (max-width: 600px) { .quiz-container { grid-template-columns: 1fr; } }
@@ -306,6 +326,11 @@
         /* Quiz-Frage: kleinere Schrift auf schmalen Screens, damit lange Fragen nicht überlaufen */
         #quiz-question { font-size: 1.4rem !important; margin-bottom: 30px !important; }
         #quiz-info { font-size: 1.05rem !important; }
+
+        /* Leaderboard: kompakter auf dem Handy */
+        .leaderboard-row { padding: 11px 14px !important; gap: 10px !important; }
+        .leaderboard-name { font-size: 0.95rem !important; }
+        .leaderboard-score { font-size: 1.1rem !important; min-width: 36px !important; }
     }
         
     </style>
@@ -444,11 +469,21 @@
             </div>
         </div>
 
+        <div class="screen hidden" id="leaderboard-screen" style="max-width: 620px; margin: 0 auto; text-align: center;">
+            <div class="card" style="padding: 45px 35px;">
+                <span style="font-size: 3rem; display: block; margin-bottom: 10px;">🏆</span>
+                <h2 id="leaderboard-title" style="font-size: 1.6rem; font-weight: 700; margin-bottom: 8px;">Zwischenstand</h2>
+                <p id="leaderboard-subtitle" style="color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem;">Nächste Runde startet gleich …</p>
+                <div id="leaderboard-list"></div>
+            </div>
+        </div>
+
         <div class="screen hidden" id="game-over-screen" style="text-align: center; max-width: 550px; margin: 50px auto;">
             <div class="card" style="padding: 50px 40px;">
                 <span style="font-size: 4.5rem; display: block; margin-bottom: 15px;">👑</span>
                 <h1 style="font-size: 2.8rem; letter-spacing: 4px; margin-bottom: 10px; background: linear-gradient(135deg, #fff 0%, var(--accent-yellow) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SITZUNG BEENDET</h1>
-                <h2 id="winner-name" style="color: #fff; font-weight: 500; font-size: 1.3rem; margin-bottom: 40px;">-</h2>
+                <h2 id="winner-name" style="color: #fff; font-weight: 500; font-size: 1.3rem; margin-bottom: 30px;">-</h2>
+                <div id="final-leaderboard-list" style="text-align: left; margin-bottom: 35px;"></div>
                 <button class="btn-play" onclick="window.location.reload()">Neue Runde starten 🔄</button>
             </div>
         </div>
@@ -586,24 +621,25 @@
             document.getElementById('btn-back').classList.remove('hidden');
         });
 
-            socket.on('newTurn', ({ activePlayerName, activePlayerId, question, options }) => {
+            socket.on('newTurn', ({ activePlayerName, activePlayerId, question, options, round }) => {
             // --- WICHTIG: UI ZWINGEND ZURÜCKSETZEN ---
             const overlay = document.getElementById('result-overlay');
             overlay.classList.remove('active', 'success-state', 'danger-state');
     
             // Dann erst den Rest ausführen
             document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('lobby-screen').classList.add('hidden');
             document.getElementById('player-wait-screen').classList.add('hidden');
+            document.getElementById('leaderboard-screen').classList.add('hidden');
             document.getElementById('quiz-screen').classList.remove('hidden');
 
             const infoTag = document.getElementById('quiz-info');
+            const rundenPrefix = round ? `Runde ${round} • ` : '';
             if (socket.id === activePlayerId) {
-                infoTag.innerText = "🚨 DU BIST AM ZUG! Triff eine Entscheidung:";
+                infoTag.innerText = `${rundenPrefix}🚨 DU BIST AM ZUG! Triff eine Entscheidung:`;
                 infoTag.style.color = "var(--accent-orange)";
             } else {
-                infoTag.innerText = `Übertragung läuft • Aktiv: ${activePlayerName}`;
+                infoTag.innerText = `${rundenPrefix}Übertragung läuft • Aktiv: ${activePlayerName}`;
                 infoTag.style.color = "var(--neon-purple)";
             }
 
@@ -661,12 +697,63 @@ socket.on('turnResult', ({ success, msg }) => {
 });
  
 
-        socket.on('gameOver', ({ winner }) => {
+        socket.on('gameOver', ({ winner, leaderboard }) => {
             document.getElementById('result-overlay').classList.remove('active');
             document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('leaderboard-screen').classList.add('hidden');
             document.getElementById('game-over-screen').classList.remove('hidden');
             document.getElementById('winner-name').innerText = `Sieger des Universums: ${winner} 🎉`;
+            if (leaderboard) renderLeaderboard(leaderboard, 'final-leaderboard-list');
         });
+
+        socket.on('roundEnd', ({ round, leaderboard }) => {
+            document.getElementById('result-overlay').classList.remove('active');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('leaderboard-screen').classList.remove('hidden');
+            document.getElementById('leaderboard-title').innerText = `🏆 Stand nach Runde ${round}`;
+            document.getElementById('leaderboard-subtitle').innerText = 'Nächste Runde startet gleich …';
+            renderLeaderboard(leaderboard, 'leaderboard-list');
+        });
+
+        // Baut die Rangliste in den angegebenen Container, mit gestaffelter Eintritts-Animation
+        // und einem sanften Hochzähl-Effekt für die Punktzahl je Zeile.
+        function renderLeaderboard(leaderboard, containerId) {
+            const list = document.getElementById(containerId);
+            if (!list) return;
+            list.innerHTML = "";
+
+            leaderboard.forEach((p, i) => {
+                const rank = i + 1;
+                const row = document.createElement('div');
+                row.className = 'leaderboard-row' + (rank <= 3 ? ` rank-${rank}` : '') + (p.alive ? '' : ' eliminated-row');
+                row.style.animationDelay = `${i * 0.12}s`;
+
+                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                const statusIcon = p.alive ? '' : ' 💀';
+
+                row.innerHTML = `
+                    <div class="leaderboard-rank">${medal}</div>
+                    <div class="leaderboard-name">${p.name}${statusIcon}</div>
+                    <div class="leaderboard-score">0</div>
+                `;
+                list.appendChild(row);
+
+                const scoreEl = row.querySelector('.leaderboard-score');
+                setTimeout(() => animateCountUp(scoreEl, p.score, 650), i * 120 + 150);
+            });
+        }
+
+        function animateCountUp(el, target, duration) {
+            if (target === 0) { el.innerText = "0"; return; }
+            const start = performance.now();
+            function step(now) {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3); // ease-out
+                el.innerText = Math.round(eased * target);
+                if (progress < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
 
         socket.on('errorMsg', (msg) => { alert(msg); });
 
