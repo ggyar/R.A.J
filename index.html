@@ -702,7 +702,7 @@ socket.on('turnResult', ({ success, msg }) => {
             document.getElementById('quiz-screen').classList.add('hidden');
             document.getElementById('leaderboard-screen').classList.add('hidden');
             document.getElementById('game-over-screen').classList.remove('hidden');
-            document.getElementById('winner-name').innerText = `Sieger des Universums: ${winner} 🎉`;
+            document.getElementById('winner-name').innerText = `Gratulation ${winner} 🎉`;
             if (leaderboard) renderLeaderboard(leaderboard, 'final-leaderboard-list');
         });
 
