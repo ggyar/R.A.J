@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knockout - Rapid Answer Junction</title>
+    <title>R.A.J - The Ultimate Elimination Quiz</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
@@ -113,7 +113,7 @@
          flex-direction: column;
          align-items: center; /* Zentriert horizontal */
           justify-content: center;
-          width: auto;
+          width: 100%;
         }
 
 .logo-container {
@@ -281,6 +281,31 @@
     
          /* Buttons größer für die Bedienung mit dem Daumen */
         .quiz-opt-btn { padding: 25px 15px !important; font-size: 1rem !important; }
+
+        /* Kategorien: 2-spaltig & kompakter, damit 8 Kacheln im Hochkant-Modus gut passen */
+        .category-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; margin: 24px 0 !important; }
+        .category-card { padding: 22px 10px !important; border-radius: 18px !important; }
+        .category-icon { font-size: 2rem !important; margin-bottom: 8px !important; }
+        .category-card h3 { font-size: 0.85rem !important; line-height: 1.3; overflow-wrap: break-word; }
+
+        /* Sitzungs-PIN & Ergebnis-Overlay schrumpfen, damit nichts überläuft */
+        .pin-box { padding: 25px 15px !important; }
+        .game-pin { font-size: 2.6rem !important; letter-spacing: 5px !important; }
+        .result-box { padding: 35px 20px !important; width: 92% !important; }
+        .result-icon { font-size: 3.5rem !important; }
+        .result-title { font-size: 1.9rem !important; }
+        .result-desc { font-size: 1rem !important; }
+
+        /* Spielerliste: 2-spaltig statt einer langen Liste */
+        .player-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+        .player-pill { padding: 12px !important; font-size: 0.85rem !important; }
+
+        /* Header (Logo/Titel) unter das fixierte "Spieler online"-Badge schieben, damit nichts überlappt */
+        header { margin-top: 48px !important; }
+
+        /* Quiz-Frage: kleinere Schrift auf schmalen Screens, damit lange Fragen nicht überlaufen */
+        #quiz-question { font-size: 1.4rem !important; margin-bottom: 30px !important; }
+        #quiz-info { font-size: 1.05rem !important; }
     }
         
     </style>
@@ -330,10 +355,10 @@
                     </div>
                     <div class="earth-mask"></div>
                 </div>
-                <div class="logo-text"></div>
+                <div class="logo-text">R·A·J</div>
                 
-                <br><br> <h1>KNOCKOUT</h1>
-                <p style="color: var(--text-muted); letter-spacing: 4px; margin-top: 8px; font-size: 0.9rem; text-transform: uppercase;">Rapid Answer Junction</p>
+                <br><br> <h1>R.A.J</h1>
+                <p style="color: var(--text-muted); letter-spacing: 4px; margin-top: 8px; font-size: 0.9rem; text-transform: uppercase;">The Ultimate Elimination Quiz</p>
             </header>
 
             <div class="main-grid">
@@ -369,8 +394,12 @@
             <div class="category-grid">
                 <div class="category-card" onclick="selectCategory('Allgemeines')"><span class="category-icon">💡</span><h3 style="font-weight: 500;">Allgemeines</h3></div>
                 <div class="category-card" onclick="selectCategory('Die Welt')"><span class="category-icon">🌍</span><h3 style="font-weight: 500;">Die Welt</h3></div>
-                <div class="category-card" onclick="selectCategory('Kontinente')"><span class="category-icon">🗺️</span><h3 style="font-weight: 500;">Kontinente</h3></div>
                 <div class="category-card" onclick="selectCategory('Länder')"><span class="category-icon">🏳️‍🌈</span><h3 style="font-weight: 500;">Länder</h3></div>
+                <div class="category-card" onclick="selectCategory('Musik')"><span class="category-icon">🎵</span><h3 style="font-weight: 500;">Musik</h3></div>
+                <div class="category-card" onclick="selectCategory('Kunst')"><span class="category-icon">🎨</span><h3 style="font-weight: 500;">Kunst</h3></div>
+                <div class="category-card" onclick="selectCategory('Naturwissenschaften')"><span class="category-icon">🔬</span><h3 style="font-weight: 500;">Naturwissenschaften</h3></div>
+                <div class="category-card" onclick="selectCategory('Film')"><span class="category-icon">🎬</span><h3 style="font-weight: 500;">Film</h3></div>
+                <div class="category-card" onclick="selectCategory('Sport')"><span class="category-icon">🏅</span><h3 style="font-weight: 500;">Sport</h3></div>
             </div>
         </div>
 
@@ -571,7 +600,7 @@
 
             const infoTag = document.getElementById('quiz-info');
             if (socket.id === activePlayerId) {
-                infoTag.innerText = "DU BIST AM ZUG!";
+                infoTag.innerText = "🚨 DU BIST AM ZUG! Triff eine Entscheidung:";
                 infoTag.style.color = "var(--accent-orange)";
             } else {
                 infoTag.innerText = `Übertragung läuft • Aktiv: ${activePlayerName}`;
@@ -636,7 +665,7 @@ socket.on('turnResult', ({ success, msg }) => {
             document.getElementById('result-overlay').classList.remove('active');
             document.getElementById('quiz-screen').classList.add('hidden');
             document.getElementById('game-over-screen').classList.remove('hidden');
-            document.getElementById('winner-name').innerText = `Glückwunsch ${winner} 🎉`;
+            document.getElementById('winner-name').innerText = `Sieger des Universums: ${winner} 🎉`;
         });
 
         socket.on('errorMsg', (msg) => { alert(msg); });
