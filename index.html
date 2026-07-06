@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R.A.J - The Ultimate Elimination Quiz</title>
+    <title>Knockout - The Ultimate Elimination Quiz</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
@@ -200,6 +200,9 @@
         .btn-play:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(255, 107, 53, 0.35); }
         .btn-play::after { content: ''; position: absolute; top: -50%; left: -60%; width: 30%; height: 200%; background: rgba(255,255,255,0.3); transform: rotate(25deg); transition: none; }
         .btn-play:hover::after { left: 140%; transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        .btn-secondary { display: block; width: 100%; text-align: center; background: rgba(255,255,255,0.05); color: var(--text-muted); font-size: 0.9rem; font-weight: 600; border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); cursor: pointer; margin-top: 12px; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.09); color: #fff; }
         
         input[type="text"] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); padding: 18px; color: #fff; font-size: 1.1rem; border-radius: 14px; transition: all 0.3s; }
         input[type="text"]:focus { border-color: var(--neon-blue); outline: none; box-shadow: 0 0 20px rgba(0, 242, 254, 0.15); }
@@ -392,9 +395,9 @@
                     </div>
                     <div class="earth-mask"></div>
                 </div>
-                <div class="logo-text">R·A·J</div>
+                <div class="logo-text">K.O.</div>
                 
-                <br><br> <h1>R.A.J</h1>
+                <br><br> <h1>KNOCKOUT</h1>
                 <p style="color: var(--text-muted); letter-spacing: 4px; margin-top: 8px; font-size: 0.9rem; text-transform: uppercase;">The Ultimate Elimination Quiz</p>
             </header>
 
@@ -496,7 +499,15 @@
                 <h1 style="font-size: 2.8rem; letter-spacing: 4px; margin-bottom: 10px; background: linear-gradient(135deg, #fff 0%, var(--accent-yellow) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SITZUNG BEENDET</h1>
                 <h2 id="winner-name" style="color: #fff; font-weight: 500; font-size: 1.3rem; margin-bottom: 30px;">-</h2>
                 <div id="final-leaderboard-list" style="text-align: left; margin-bottom: 35px;"></div>
-                <button class="btn-play" onclick="window.location.reload()">Neue Runde starten 🔄</button>
+
+                <div id="gameover-host-actions" class="hidden">
+                    <button class="btn-play" onclick="nochmalMitGruppe()">🔁 Nochmal mit dieser Gruppe</button>
+                    <button class="btn-secondary" onclick="window.location.reload()">🆕 Komplett neu starten (neue PIN)</button>
+                </div>
+                <div id="gameover-player-note" class="hidden">
+                    <p style="color: var(--text-muted); margin-bottom: 15px; font-size: 0.95rem;">Der Spielleiter entscheidet über die nächste Runde …</p>
+                    <button class="btn-secondary" onclick="window.location.reload()">Sitzung verlassen</button>
+                </div>
             </div>
         </div>
 
@@ -635,22 +646,22 @@
         erzeugeVordergrundSterne();
 
         // --- SERVER EVENTS ---
-        socket.on('lobbyCreated', ({ pin, kategorie }) => {
-            meineRaumPin = pin;
-            playMusic();
+        // Zeigt dem Host die Lobby (PIN + QR-Code) an - wird beim Erstellen UND bei "Nochmal mit dieser Gruppe" genutzt
+        function zeigeLobbyScreenFuerHost(pin, kategorie) {
             document.getElementById('generated-pin').innerText = pin;
             document.getElementById('chosen-category').innerText = kategorie;
+            document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('leaderboard-screen').classList.add('hidden');
             document.getElementById('lobby-screen').classList.remove('hidden');
-            
-            if (ichBinHost) {
-                document.getElementById('start-game-btn').classList.remove('hidden');
-            }
+            document.getElementById('start-game-btn').classList.remove('hidden');
+            document.getElementById('btn-back').classList.remove('hidden');
 
             const basisUrl = window.location.href.split('?')[0];
             const beitrittsLink = `${basisUrl}?joinPin=${pin}`;
-            
-            document.getElementById('lobby-qrcode').innerHTML = ""; 
+
+            document.getElementById('lobby-qrcode').innerHTML = "";
             new QRCode(document.getElementById('lobby-qrcode'), {
                 text: beitrittsLink,
                 width: 160,
@@ -659,6 +670,22 @@
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.H
             });
+        }
+
+        // Zeigt Mitspieler:innen den Warte-Bildschirm an - wird beim Beitritt UND bei "Nochmal mit dieser Gruppe" genutzt
+        function zeigePlayerWaitScreen(kategorie) {
+            document.getElementById('player-screen-cat').innerText = kategorie;
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('leaderboard-screen').classList.add('hidden');
+            document.getElementById('player-wait-screen').classList.remove('hidden');
+            document.getElementById('btn-back').classList.remove('hidden');
+        }
+
+        socket.on('lobbyCreated', ({ pin, kategorie }) => {
+            meineRaumPin = pin;
+            playMusic();
+            zeigeLobbyScreenFuerHost(pin, kategorie);
         });
 
         socket.on('updatePlayers', (players) => {
@@ -676,10 +703,17 @@
         socket.on('joinedSuccessfully', ({ kategorie, pin }) => {
             meineRaumPin = pin;
             playMusic();
-            document.getElementById('player-screen-cat').innerText = kategorie;
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('player-wait-screen').classList.remove('hidden');
-            document.getElementById('btn-back').classList.remove('hidden');
+            zeigePlayerWaitScreen(kategorie);
+        });
+
+        // NEU: gleiche PIN, neue Partie - Host landet wieder in der Lobby, Mitspieler im Warteraum
+        socket.on('lobbyReset', ({ pin, kategorie }) => {
+            playMusic();
+            if (ichBinHost) {
+                zeigeLobbyScreenFuerHost(pin, kategorie);
+            } else {
+                zeigePlayerWaitScreen(kategorie);
+            }
         });
 
             socket.on('newTurn', ({ activePlayerName, activePlayerId, question, options, round }) => {
@@ -766,6 +800,8 @@ socket.on('turnResult', ({ success, msg }) => {
             document.getElementById('game-over-screen').classList.remove('hidden');
             document.getElementById('winner-name').innerText = `Sieger des Universums: ${winner} 🎉`;
             if (leaderboard) renderLeaderboard(leaderboard, 'final-leaderboard-list');
+            document.getElementById('gameover-host-actions').classList.toggle('hidden', !ichBinHost);
+            document.getElementById('gameover-player-note').classList.toggle('hidden', ichBinHost);
             playMusic();
         });
 
@@ -828,7 +864,20 @@ socket.on('turnResult', ({ success, msg }) => {
             document.getElementById('btn-back').classList.remove('hidden');
             playMusic();
         }
-        function selectCategory(kategorieName) { socket.emit('createLobby', kategorieName); }
+        function selectCategory(kategorieName) {
+            if (meineRaumPin) {
+                // Es existiert schon eine Sitzung -> gleiche PIN weiterverwenden statt eine neue zu erzeugen
+                socket.emit('restartLobby', { pin: meineRaumPin, kategorie: kategorieName });
+            } else {
+                socket.emit('createLobby', kategorieName);
+            }
+        }
+
+        // Host: vom Sieger-Screen zurück zur Kategorie-Auswahl, PIN/Gruppe bleibt erhalten
+        function nochmalMitGruppe() {
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+        }
         function spielBeitreten() {
             const pinInput = document.getElementById('join-pin').value.trim();
             const nameInput = document.getElementById('join-name').value.trim();
