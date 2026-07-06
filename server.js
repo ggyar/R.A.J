@@ -9,7 +9,7 @@ app.use(cors());
 
 // Kleine Health-Check-Route, damit man im Browser sieht ob der Server lebt
 app.get('/', (req, res) => {
-    res.send('R.A.J Quiz-Server läuft ✅');
+    res.send('Knockout Quiz-Server läuft ✅');
 });
 
 const server = http.createServer(app);
@@ -18,6 +18,7 @@ const io = new Server(server, { cors: { origin: "*" } });
 const lobbies = {};
 let onlineCount = 0;
 const LEADERBOARD_DISPLAY_MS = 5000; // Wie lange das Leaderboard zwischen den Runden sichtbar bleibt
+const LEADERBOARD_INTERVAL = 5; // Leaderboard nur alle X Runden zeigen (+ immer am Schluss)
 
 function pickNextQuestion(lobby) {
     const pool = questionsPool[lobby.kategorie] || questionsPool["Allgemeines"];
@@ -113,7 +114,7 @@ function advanceGame(pin) {
     if (alive.length <= 1) {
         const winnerName = alive.length === 1 ? alive[0].name : "Niemand";
         io.to(pin).emit('gameOver', { winner: winnerName, leaderboard: buildLeaderboard(lobby) });
-        delete lobbies[pin];
+        lobby.started = false; // Sitzung bleibt bestehen -> gleiche PIN kann für eine neue Partie genutzt werden
         return;
     }
 
@@ -121,15 +122,23 @@ function advanceGame(pin) {
         lobby.roundTurnsTaken.size >= lobby.roundParticipants.length;
 
     if (rundeKomplett) {
-        io.to(pin).emit('roundEnd', {
-            round: lobby.roundNumber,
-            leaderboard: buildLeaderboard(lobby)
-        });
-        setTimeout(() => {
-            if (!lobbies[pin]) return; // Lobby könnte zwischenzeitlich weg sein
-            beginNewRound(lobbies[pin]);
+        const zeigeLeaderboard = (lobby.roundNumber % LEADERBOARD_INTERVAL === 0);
+
+        if (zeigeLeaderboard) {
+            io.to(pin).emit('roundEnd', {
+                round: lobby.roundNumber,
+                leaderboard: buildLeaderboard(lobby)
+            });
+            setTimeout(() => {
+                if (!lobbies[pin]) return; // Lobby könnte zwischenzeitlich weg sein
+                beginNewRound(lobbies[pin]);
+                startNextTurn(pin);
+            }, LEADERBOARD_DISPLAY_MS);
+        } else {
+            // Zwischenrunde ohne Leaderboard-Anzeige: direkt weiter
+            beginNewRound(lobby);
             startNextTurn(pin);
-        }, LEADERBOARD_DISPLAY_MS);
+        }
     } else {
         startNextTurn(pin);
     }
@@ -188,6 +197,29 @@ io.on('connection', (socket) => {
         lobby.started = true;
         beginNewRound(lobby);
         startNextTurn(pin);
+    });
+
+    // NEU: gleiche PIN, neue Partie -> Punkte/Status zurücksetzen statt neue Lobby zu erzeugen
+    socket.on('restartLobby', ({ pin, kategorie }) => {
+        const lobby = lobbies[pin];
+        if (!lobby) {
+            socket.emit('errorMsg', 'Diese Sitzung existiert nicht mehr.');
+            return;
+        }
+        if (socket.id !== lobby.hostId) return; // nur der Host darf eine neue Partie starten
+
+        lobby.kategorie = kategorie;
+        lobby.started = false;
+        lobby.activePlayerId = null;
+        lobby.currentCorrectIndex = null;
+        lobby.usedQuestionIndices = new Set();
+        lobby.roundParticipants = [];
+        lobby.roundTurnsTaken = new Set();
+        lobby.roundNumber = 0;
+        lobby.players.forEach(p => { p.alive = true; p.score = 0; });
+
+        io.to(pin).emit('lobbyReset', { pin, kategorie });
+        broadcastPlayers(pin);
     });
 
     socket.on('submitAnswer', ({ pin, answerIndex }) => {
